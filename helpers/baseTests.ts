@@ -10,6 +10,7 @@ import { _InventoryManagementFlows } from '../services/inventoryManagementFlows'
 import { SupplierApi } from '../services/supplier';
 import { _AccountingService } from '../services/accounting';
 import { _CommercialsService } from '../services/commercials';
+import { closeDatabase } from '../utils/database';
 
 const test = baseTest.extend<{
   common: _common;
@@ -56,6 +57,10 @@ const test = baseTest.extend<{
   commercialsService: async ({}, use) => {
     await use(new _CommercialsService());
   },
+});
+
+test.afterAll(async () => {
+  await closeDatabase();
 });
 
 export default test;

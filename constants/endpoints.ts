@@ -27,8 +27,12 @@ export const serviceConstants = {
       type: {
         weight: 'Weight',
         volume: 'Volume',
+        count: 'Count',
         length: 'Length',
+        area: 'Area',
+        other: 'Other',
       },
+      allowedTypes: ['Weight', 'Volume', 'Count', 'Length', 'Area', 'Other'],
     },
   },
   accounting: {

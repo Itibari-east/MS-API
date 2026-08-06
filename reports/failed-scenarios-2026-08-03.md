@@ -41,3 +41,16 @@ The stricter GET assertions for create/update flows now fail because the entity 
 - permission groups create/update
 - roles create/update
 - users create/update
+
+## UOM Audit Fields
+
+The UOM database validation is now wired against `itibari.commercials.uoms` and reaches the row successfully, but the audit creator field is not populated on create.
+
+- `creation_time` is present
+- `created_by` is missing / null
+- `last_modified_by` is expected on update/deactivate, but the create path already fails before that assertion
+
+This currently affects:
+- UOM create
+- UOM update
+- UOM deactivate
