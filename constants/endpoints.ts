@@ -18,6 +18,19 @@ export const serviceConstants = {
       web: 'WEB',
     },
   },
+  commercials: {
+    uom: {
+      status: {
+        active: 'ACTIVE',
+        inactive: 'INACTIVE',
+      },
+      type: {
+        weight: 'Weight',
+        volume: 'Volume',
+        length: 'Length',
+      },
+    },
+  },
   accounting: {
     samples: {
       bankPublicId: '9c4c7e1e-613c-42df-b744-f60f20eb90d1',

@@ -1,0 +1,2229 @@
+{
+  "info": {
+    "name": "commercials-service",
+    "description": "Postman collection generated from commercials-service OpenAPI",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api-micro-dev.itibari.io/commercials-service"
+    },
+    {
+      "key": "token",
+      "value": "REPLACE_WITH_BEARER_TOKEN"
+    },
+    {
+      "key": "publicId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "supplierPublicId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "documentPublicId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "rebatePublicId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "productPublicId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "bankPublicId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "branchPublicId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "uomPublicId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "classPublicId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "subclassPublicId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "categoryPublicId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "packagingUnitPublicId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "search",
+      "value": "string"
+    },
+    {
+      "key": "type",
+      "value": "string"
+    },
+    {
+      "key": "status",
+      "value": "ACTIVE"
+    },
+    {
+      "key": "page",
+      "value": "0"
+    },
+    {
+      "key": "size",
+      "value": "20"
+    },
+    {
+      "key": "sort",
+      "value": "creationTime,DESC"
+    },
+    {
+      "key": "country",
+      "value": "Tanzania"
+    },
+    {
+      "key": "city",
+      "value": "Arusha"
+    },
+    {
+      "key": "leadDays",
+      "value": "7"
+    },
+    {
+      "key": "creditTerms",
+      "value": "NET 30"
+    },
+    {
+      "key": "deliveryPerformance",
+      "value": "A"
+    },
+    {
+      "key": "minBuyingPrice",
+      "value": "1"
+    },
+    {
+      "key": "maxBuyingPrice",
+      "value": "10"
+    },
+    {
+      "key": "recentlyAdded",
+      "value": "LAST_7_DAYS"
+    },
+    {
+      "key": "categoryCode",
+      "value": "CAT001"
+    },
+    {
+      "key": "documentTypeCode",
+      "value": "DOC001"
+    },
+    {
+      "key": "fileName",
+      "value": "sample.pdf"
+    },
+    {
+      "key": "storageKey",
+      "value": "stub/storage/key"
+    },
+    {
+      "key": "contentType",
+      "value": "application/pdf"
+    },
+    {
+      "key": "expiryDate",
+      "value": "2026-12-31"
+    },
+    {
+      "key": "name",
+      "value": "Example Name"
+    },
+    {
+      "key": "code",
+      "value": "CODE123"
+    },
+    {
+      "key": "swiftCode",
+      "value": "CORUTZTZ"
+    },
+    {
+      "key": "accountNumber",
+      "value": "1234567890"
+    },
+    {
+      "key": "accountName",
+      "value": "Example Account"
+    },
+    {
+      "key": "description",
+      "value": "Example description"
+    },
+    {
+      "key": "email",
+      "value": "user@example.com"
+    },
+    {
+      "key": "phoneNumber",
+      "value": "255700000000"
+    },
+    {
+      "key": "date",
+      "value": "2026-08-04"
+    }
+  ],
+  "item": [
+    {
+      "name": "UOMs",
+      "item": [
+        {
+          "name": "List units of measure",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/uoms?search=string&type={{type}}&status=ACTIVE&page=0&size=20&sort=creationTime%2CDESC"
+          }
+        },
+        {
+          "name": "Create UOM",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/uoms",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Example Name\",\n  \"code\": \"CODE123\",\n  \"type\": \"Weight\",\n  \"description\": \"Example description\",\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Move products to another UOM and deactivate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/uoms/{{publicId}}/deactivate",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetUomPublicId\": \"00000000-0000-0000-0000-000000000000\",\n  \"reason\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get UOM detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/uoms/{{publicId}}"
+          }
+        },
+        {
+          "name": "Edit UOM",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/uoms/{{publicId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Example Name\",\n  \"code\": \"CODE123\",\n  \"type\": \"Weight\",\n  \"description\": \"Example description\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update UOM status (Active toggle)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/uoms/{{publicId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Suppliers",
+      "item": [
+        {
+          "name": "List suppliers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers?search=string&status=DRAFT&leadDays=7&creditTerms={{creditTerms}}&deliveryPerformance={{deliveryPerformance}}&country=Tanzania&city=Arusha&page=0&size=20&sort=creationTime%2CDESC"
+          }
+        },
+        {
+          "name": "Create supplier draft (step 1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Example Name\",\n  \"supplierTypeCode\": \"CODE123\",\n  \"registrationNumber\": \"string\",\n  \"tinNumber\": \"string\",\n  \"vrnNumber\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Grant supplier portal access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{publicId}}/portal-access"
+          }
+        },
+        {
+          "name": "Upsert document metadata (step 7)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{publicId}}/documents",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentTypeCode\": \"CODE123\",\n  \"storageKey\": \"string\",\n  \"fileName\": \"Example Name\",\n  \"contentType\": \"string\",\n  \"sizeBytes\": 1,\n  \"expiryDate\": \"2026-08-04\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Deactivate an active supplier",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{publicId}}/deactivate",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reasonCode\": \"CODE123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Confirm draft supplier (step 8)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{publicId}}/confirm"
+          }
+        },
+        {
+          "name": "Bulk deactivate suppliers",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/deactivate",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"publicIds\": [\n    \"00000000-0000-0000-0000-000000000000\"\n  ],\n  \"reasonCode\": \"CODE123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Upsert primary point of contact (step 3)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{publicId}}/points-of-contact",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Example Name\",\n  \"lastName\": \"Example Name\",\n  \"jobTitle\": \"string\",\n  \"phone\": \"255700000000\",\n  \"alternativePhone\": \"255700000000\",\n  \"primaryEmail\": \"user@example.com\",\n  \"secondaryEmail\": \"user@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Upsert secondary point of contact (optional; same fields as step 3 primary)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{publicId}}/points-of-contact/secondary",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Example Name\",\n  \"lastName\": \"Example Name\",\n  \"jobTitle\": \"string\",\n  \"phone\": \"255700000000\",\n  \"alternativePhone\": \"255700000000\",\n  \"primaryEmail\": \"user@example.com\",\n  \"secondaryEmail\": \"user@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Replace mobile money information (step 5). Empty accounts clears rows and advances the step.",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{publicId}}/mobile-money-accounts",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accounts\": [\n    {\n      \"publicId\": \"00000000-0000-0000-0000-000000000000\",\n      \"mobileMoneyName\": \"Kilombero Co\",\n      \"mobileMoneyNumber\": \"+254718919291\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Upsert contact information (step 2)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{publicId}}/contact",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"physicalAddress\": \"string\",\n  \"postalAddress\": \"string\",\n  \"countryCode\": \"CODE123\",\n  \"cityCode\": \"CODE123\",\n  \"primaryPhone\": \"255700000000\",\n  \"alternativePhone\": \"255700000000\",\n  \"primaryEmail\": \"user@example.com\",\n  \"alternativeEmail\": \"user@example.com\",\n  \"website\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Patch business terms (step 4)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{publicId}}/business-terms",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"creditTermsCode\": \"CODE123\",\n  \"creditTermsCustom\": \"string\",\n  \"paymentMethodCodes\": [\n    \"CODE123\"\n  ],\n  \"currencyCode\": \"CODE123\",\n  \"minimumOrderValue\": 1,\n  \"leadDays\": 1,\n  \"paymentReminderDays\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Replace banking information (step 5). Empty accounts clears banks and advances the step (Skip).",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{publicId}}/bank-accounts",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accounts\": [\n    {\n      \"publicId\": \"00000000-0000-0000-0000-000000000000\",\n      \"bankCode\": \"CRDB\",\n      \"branchCode\": \"CODE123\",\n      \"accountName\": \"Kilombero Sugar\",\n      \"accountNumber\": \"01J1092881900\",\n      \"swiftCode\": \"CODE123\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Patch additional information (step 6)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{publicId}}/additional",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productCategoryCodes\": [\n    \"CODE123\"\n  ],\n  \"businessLicenseNumber\": \"string\",\n  \"notes\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get supplier detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{publicId}}"
+          }
+        },
+        {
+          "name": "List supplier user activity events",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{publicId}}/activities?page=0&size=20&sort=occurredAt%2CDESC"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Supplier Products",
+      "item": [
+        {
+          "name": "List supplier products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/products?search=string&status=ACTIVE&category={{category}}&minBuyingPrice=1&maxBuyingPrice=1&recentlyAdded=LAST_7_DAYS&page=0&size=20&sort=linkedAt%2CDESC"
+          }
+        },
+        {
+          "name": "Attach catalog products to supplier (skip already linked)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/products",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productPublicIds\": [\n    \"00000000-0000-0000-0000-000000000000\"\n  ],\n  \"categoryCode\": \"CODE123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Upload products from Excel/XLS (itemized partial success)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/products/upload?categoryCode=CAT001",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Download product upload Excel template",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/products/upload-template"
+          }
+        },
+        {
+          "name": "Supplier product KPI summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/products/summary"
+          }
+        },
+        {
+          "name": "Export supplier products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/products/export?exportType=PDF&search=string&status=ACTIVE&category={{category}}&minBuyingPrice=1&maxBuyingPrice=1&recentlyAdded=LAST_7_DAYS&page=0&size=1000&sort=linkedAt%2CDESC"
+          }
+        },
+        {
+          "name": "Unlink product from supplier",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/products/{{productPublicId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Supplier Documents",
+      "item": [
+        {
+          "name": "List supplier documents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/documents?search=string&documentTypeCode=DOC001&type={{type}}&page=0&size=20&sort=documentTypeCode%2CASC"
+          }
+        },
+        {
+          "name": "Upload document (multipart; bytes used only for stub key)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "multipart/form-data"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/documents",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "documentTypeCode",
+                  "type": "text",
+                  "value": "CODE123"
+                },
+                {
+                  "key": "fileName",
+                  "type": "text",
+                  "value": "Example Name"
+                },
+                {
+                  "key": "storageKey",
+                  "type": "text",
+                  "value": "string"
+                },
+                {
+                  "key": "contentType",
+                  "type": "text",
+                  "value": "string"
+                },
+                {
+                  "key": "expiryDate",
+                  "type": "text",
+                  "value": "string"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Send document renewal reminder (NotificationPort stub)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/documents/{{documentPublicId}}/renewal-reminder"
+          }
+        },
+        {
+          "name": "Stub view URL for document",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/documents/{{documentPublicId}}/view"
+          }
+        },
+        {
+          "name": "Stub download URL for document",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/documents/{{documentPublicId}}/download"
+          }
+        },
+        {
+          "name": "Export supplier documents (Excel/PDF)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/documents/export?search=string&documentTypeCode=DOC001&type={{type}}&exportType=PDF&page=0&size=1000&sort=documentTypeCode%2CASC"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sub Classes",
+      "item": [
+        {
+          "name": "List subclasses",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/subclasses?search=string&status=ACTIVE&classPublicId={{classPublicId}}&categoryPublicId={{categoryPublicId}}&page=0&size=20&sort=creationTime%2CDESC"
+          }
+        },
+        {
+          "name": "Create subclass",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/subclasses",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Example Name\",\n  \"classPublicId\": \"00000000-0000-0000-0000-000000000000\",\n  \"categoryPublicId\": \"00000000-0000-0000-0000-000000000000\",\n  \"description\": \"Example description\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get subclass detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/subclasses/{{publicId}}"
+          }
+        },
+        {
+          "name": "Edit subclass",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/subclasses/{{publicId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Example Name\",\n  \"description\": \"Example description\",\n  \"classPublicId\": \"00000000-0000-0000-0000-000000000000\",\n  \"categoryPublicId\": \"00000000-0000-0000-0000-000000000000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update subclass status (Active toggle)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/subclasses/{{publicId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Packaging Units",
+      "item": [
+        {
+          "name": "List packaging units",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/packaging-units?search=string&baseUomPublicId={{baseUomPublicId}}&status=ACTIVE&page=0&size=20&sort=creationTime%2CDESC"
+          }
+        },
+        {
+          "name": "Create packaging unit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/packaging-units",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Example Name\",\n  \"code\": \"CODE123\",\n  \"baseUomPublicId\": \"00000000-0000-0000-0000-000000000000\",\n  \"conversionFactor\": \"string\",\n  \"description\": \"Example description\",\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get packaging unit detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/packaging-units/{{publicId}}"
+          }
+        },
+        {
+          "name": "Edit packaging unit",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/packaging-units/{{publicId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Example Name\",\n  \"code\": \"CODE123\",\n  \"baseUomPublicId\": \"00000000-0000-0000-0000-000000000000\",\n  \"conversionFactor\": \"string\",\n  \"description\": \"Example description\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update packaging unit status (Active toggle)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/packaging-units/{{publicId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Classes",
+      "item": [
+        {
+          "name": "List classes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/classes?search=string&status=ACTIVE&categoryPublicId={{categoryPublicId}}&page=0&size=20&sort=creationTime%2CDESC"
+          }
+        },
+        {
+          "name": "Create class",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/classes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Example Name\",\n  \"categoryPublicId\": \"00000000-0000-0000-0000-000000000000\",\n  \"description\": \"Example description\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get class detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/classes/{{publicId}}"
+          }
+        },
+        {
+          "name": "Edit class",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/classes/{{publicId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Example Name\",\n  \"description\": \"Example description\",\n  \"categoryPublicId\": \"00000000-0000-0000-0000-000000000000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update class status (Active toggle)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/classes/{{publicId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "List categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/categories?search=string&status=ACTIVE&page=0&size=20&sort=creationTime%2CDESC"
+          }
+        },
+        {
+          "name": "Create category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/categories",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Example Name\",\n  \"description\": \"Example description\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get category detail with class hierarchy",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/categories/{{publicId}}"
+          }
+        },
+        {
+          "name": "Edit category",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/categories/{{publicId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Example Name\",\n  \"description\": \"Example description\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update category status (Active toggle)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/categories/{{publicId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Banks",
+      "item": [
+        {
+          "name": "List banks (admin catalog + supplier bank dropdown)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/banks?search=string&country=Tanzania&status=ACTIVE&page=0&size=20&sort=name%2CASC"
+          }
+        },
+        {
+          "name": "Create bank (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/banks",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Equity Bank\",\n  \"code\": \"EQUITY\",\n  \"country\": \"Tanzania\",\n  \"swiftCode\": \"EQBLTZTZ\",\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "List branches for a bank",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/banks/{{publicId}}/branches?search=string&city=Arusha&page=0&size=20&sort=name%2CASC"
+          }
+        },
+        {
+          "name": "Create branch under a bank",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/banks/{{publicId}}/branches",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Equity Head Office\",\n  \"code\": \"EQUITY_HQ\",\n  \"city\": \"Dar es Salaam\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get bank by public id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/banks/{{publicId}}"
+          }
+        },
+        {
+          "name": "Soft-delete bank and its branches (distinct from status INACTIVE)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/banks/{{publicId}}"
+          }
+        },
+        {
+          "name": "Update bank name, country, and SWIFT code (code immutable)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/banks/{{publicId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Equity Bank\",\n  \"country\": \"Tanzania\",\n  \"swiftCode\": \"EQBLTZTZ\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update bank catalog status (Active toggle / Deactivate confirm). Distinct from soft-delete.",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/banks/{{publicId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Soft-delete branch",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/banks/{{publicId}}/branches/{{branchPublicId}}"
+          }
+        },
+        {
+          "name": "Update branch name and city",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/banks/{{publicId}}/branches/{{branchPublicId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Equity Head Office\",\n  \"city\": \"Dar es Salaam\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Supplier Rebates",
+      "item": [
+        {
+          "name": "Rebates & Incentives table (pageable, searchable, filterable)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/rebates?search=string&status=PENDING&periodFrom={{periodFrom}}&periodTo={{periodTo}}&page=0&size=20&sort=period%2CDESC"
+          }
+        },
+        {
+          "name": "Rebate agreement metadata (View = storage key stub)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/rebates/{{rebatePublicId}}/agreement"
+          }
+        },
+        {
+          "name": "Six Rebates & Incentives summary cards",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/rebates/summary"
+          }
+        },
+        {
+          "name": "Export rebates (Excel/PDF)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/rebates/export?exportType=PDF&search=string&status=PENDING&periodFrom={{periodFrom}}&periodTo={{periodTo}}&page=0&size=1000&sort=period%2CDESC"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Supplier Purchase Orders",
+      "item": [
+        {
+          "name": "Purchase Orders table (pageable, searchable, filterable)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/purchase-orders?search=string&status=RECEIVED&dateCreatedFrom={{dateCreatedFrom}}&dateCreatedTo={{dateCreatedTo}}&page=0&size=20&sort=dateCreated%2CDESC"
+          }
+        },
+        {
+          "name": "Seven Purchase Orders summary cards",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/purchase-orders/summary"
+          }
+        },
+        {
+          "name": "Export purchase orders (Excel/PDF)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/purchase-orders/export?exportType=PDF&search=string&status=RECEIVED&dateCreatedFrom={{dateCreatedFrom}}&dateCreatedTo={{dateCreatedTo}}&page=0&size=1000&sort=dateCreated%2CDESC"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Supplier Performance Analytics",
+      "item": [
+        {
+          "name": "Six KPI score cards",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/performance/summary"
+          }
+        },
+        {
+          "name": "Responsiveness metrics rows",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/performance/responsiveness"
+          }
+        },
+        {
+          "name": "Quality gauges",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/performance/quality"
+          }
+        },
+        {
+          "name": "Order status donut (total product value + slices)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/performance/order-status"
+          }
+        },
+        {
+          "name": "Promised vs actual lead days by month",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/performance/lead-days?year={{year}}"
+          }
+        },
+        {
+          "name": "Fully vs Partially Fulfilled series by day (unit: TONNES_X000 from stub)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/performance/delivery-series?year={{year}}&month={{month}}"
+          }
+        },
+        {
+          "name": "Recent deliveries table (pageable)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/suppliers/{{supplierPublicId}}/performance/deliveries?page=0&size=20&sort=orderDate%2CDESC"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Supplier Reports",
+      "item": [
+        {
+          "name": "Export suppliers (Excel/PDF)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/supplierReports/export?search=string&status=DRAFT&leadDays=7&creditTerms={{creditTerms}}&deliveryPerformance={{deliveryPerformance}}&country=Tanzania&city=Arusha&exportType=PDF&page=0&size=1000&sort=creationTime%2CDESC"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Supplier Reports Dashboard",
+      "item": [
+        {
+          "name": "Multi-series performance trend",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/supplier-reports/performance/trend?countryCode=Tanzania&cityCode=Arusha&from={{from}}&to={{to}}"
+          }
+        },
+        {
+          "name": "Supplier performance table (pageable)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/supplier-reports/performance/suppliers?countryCode=Tanzania&cityCode=Arusha&page=0&size=20&sort=overallPercent%2CDESC"
+          }
+        },
+        {
+          "name": "Six portfolio KPI cards (optional MoM trend)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/supplier-reports/performance/summary?countryCode=Tanzania&cityCode=Arusha"
+          }
+        },
+        {
+          "name": "Supplier ranking bars",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/supplier-reports/performance/ranking?countryCode=Tanzania&cityCode=Arusha"
+          }
+        },
+        {
+          "name": "Export portfolio performance summary + tables (Excel/PDF)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/supplier-reports/performance/export?exportType=PDF&countryCode=Tanzania&cityCode=Arusha&page=0&size=1000&sort=overallPercent%2CDESC"
+          }
+        },
+        {
+          "name": "Category performance table (pageable)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/supplier-reports/performance/categories?countryCode=Tanzania&cityCode=Arusha&page=0&size=20&sort=overallPercent%2CDESC"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Thin catalog browse by category (Add Products modal)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "{{baseUrl}}/products?categoryCode=CAT001&search=string"
+          }
+        }
+      ]
+    }
+  ]
+}
