@@ -1,0 +1,349 @@
+{
+  "info": {
+    "name": "accounting-service",
+    "_postman_id": "4d55f87b-9484-4d89-a371-87d6c1bf0311",
+    "description": "Postman collection for the accounting-service endpoints used by the MS API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api-micro-dev.itibari.io"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "publicId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "branchPublicId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "supplierPublicId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "supplierBankAccountPublicId",
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    {
+      "key": "search",
+      "value": ""
+    },
+    {
+      "key": "country",
+      "value": "Tanzania"
+    },
+    {
+      "key": "status",
+      "value": "ACTIVE"
+    },
+    {
+      "key": "page",
+      "value": "0"
+    },
+    {
+      "key": "size",
+      "value": "20"
+    },
+    {
+      "key": "sort",
+      "value": "creationTime,DESC"
+    },
+    {
+      "key": "city",
+      "value": "Arusha"
+    }
+  ],
+  "item": [
+    {
+      "name": "Banks",
+      "item": [
+        {
+          "name": "getBanks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "https://api-micro-dev.itibari.io/api/v1/banks?search={{search}}&country={{country}}&status={{status}}&page={{page}}&size={{size}}&sort={{sort}}"
+          }
+        },
+        {
+          "name": "createBank",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "https://api-micro-dev.itibari.io/api/v1/banks",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Automation Bank\",\n  \"code\": \"AUTO01\",\n  \"country\": \"Tanzania\",\n  \"swiftCode\": \"ABCDTZTZ\",\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "listBranches",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "https://api-micro-dev.itibari.io/api/v1/banks/{{publicId}}/branches?search={{search}}&city={{city}}&page={{page}}&size={{size}}&sort={{sort}}"
+          }
+        },
+        {
+          "name": "createBranch",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "https://api-micro-dev.itibari.io/api/v1/banks/{{publicId}}/branches",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Automation Branch\",\n  \"code\": \"BR001\",\n  \"city\": \"Arusha\",\n  \"bankPublicId\": \"{{publicId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "getBank",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "https://api-micro-dev.itibari.io/api/v1/banks/{{publicId}}"
+          }
+        },
+        {
+          "name": "deleteBank",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "https://api-micro-dev.itibari.io/api/v1/banks/{{publicId}}"
+          }
+        },
+        {
+          "name": "updateBank",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "https://api-micro-dev.itibari.io/api/v1/banks/{{publicId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Automation Bank\",\n  \"code\": \"AUTO01\",\n  \"country\": \"Tanzania\",\n  \"swiftCode\": \"ABCDTZTZ\",\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "updateStatus",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "https://api-micro-dev.itibari.io/api/v1/banks/{{publicId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "deleteBranch",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "https://api-micro-dev.itibari.io/api/v1/banks/{{publicId}}/branches/{{branchPublicId}}"
+          }
+        },
+        {
+          "name": "updateBranch",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "https://api-micro-dev.itibari.io/api/v1/banks/{{publicId}}/branches/{{branchPublicId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Automation Branch\",\n  \"code\": \"BR001\",\n  \"city\": \"Arusha\",\n  \"bankPublicId\": \"{{publicId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Supplier Bank Accounts",
+      "item": [
+        {
+          "name": "replaceBankAccounts",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "*/*"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "https://api-micro-dev.itibari.io/api/v1/suppliers/{{supplierPublicId}}/bank-accounts",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accounts\": [\n    {\n      \"publicId\": \"{{supplierBankAccountPublicId}}\",\n      \"bankCode\": \"ABCD01\",\n      \"branchCode\": \"BR001\",\n      \"accountName\": \"Automation Supplier Account\",\n      \"accountNumber\": \"000123456789\",\n      \"swiftCode\": \"ABCDTZTZ\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

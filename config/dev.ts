@@ -3,6 +3,7 @@ export const DEV_BASE_URL = process.env.MS_DEV_BASE_URL || 'https://api-micro-de
 export const SERVICE_ENDPOINTS = {
   userManagement: `${DEV_BASE_URL}/user-management-service`,
   inventoryManagement: `${DEV_BASE_URL}/inventory-management-service`,
+  accountingService: `${DEV_BASE_URL}/api/v1`,
   commercials: `${DEV_BASE_URL}/commercials-service`,
 };
 

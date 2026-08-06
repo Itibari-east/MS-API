@@ -1,5 +1,6 @@
 import { expect, type APIRequestContext } from '@playwright/test';
 import _config from '../config/config';
+import { serviceConstants } from '../constants/endpoints';
 import { _AuthService } from './authservice';
 import { extractAuthToken } from './requestHelpers';
 import { generateTotpCode } from '../utils/totp';
@@ -69,7 +70,7 @@ export class _AuthFlows {
   async loginMissingRequiredFields(request: APIRequestContext) {
     const response = await request.post(`${_config.baseEndpoint}/api/v1/login`, {
       headers: { 'Content-Type': 'application/json', accept: '*/*' },
-      data: { channel: 'WEB' },
+      data: { channel: serviceConstants.auth.channel.web },
     });
     expect([400, 401, 422, 500]).toContain(response.status());
   }
