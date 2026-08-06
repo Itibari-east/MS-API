@@ -1,7 +1,7 @@
-import { expect, test } from '@playwright/test';
+import { expect } from '@playwright/test';
 import { serviceConstants } from '../constants/endpoints';
 import { _CommercialsService } from '../services/commercials';
-import { json, publicIdFrom } from '../helpers/testHelpers';
+import { json } from '../helpers/testHelpers';
 
 export type CreatedUom = {
   name: string;
@@ -27,6 +27,15 @@ export async function expectStatuses<T extends { status(): number }>(
   return response;
 }
 
+export function logUom(message: string, details?: Record<string, unknown>) {
+  if (details && Object.keys(details).length > 0) {
+    console.log(`[UOM] ${message} ${JSON.stringify(details)}`);
+    return;
+  }
+
+  console.log(`[UOM] ${message}`);
+}
+
 export function uomCode(prefix: string) {
   const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const suffix = Array.from({ length: 4 }, () => letters[Math.floor(Math.random() * letters.length)]).join('');
@@ -39,6 +48,10 @@ function listItems(body: any): Array<Record<string, unknown>> {
   }
 
   return Array.isArray(body?.content) ? (body.content as Array<Record<string, unknown>>) : [];
+}
+
+export function uomListItems(body: any): Array<Record<string, unknown>> {
+  return listItems(body);
 }
 
 function findUomByCode(body: any, code: string) {
@@ -79,6 +92,7 @@ export async function createUom(
   const body = await json(response);
   const bodyPublicId = Array.isArray(body) ? body[0]?.publicId : body?.publicId;
   const publicId = bodyPublicId || (await resolveUomPublicId(commercials, token, code));
+  logUom('created', { publicId, code, type, status });
 
   return { name, code, type, status, publicId };
 }
@@ -90,11 +104,32 @@ export async function expectUomDetails(
 ) {
   const response = await expectStatuses(commercials.getUom(token, uom.publicId), [200]);
   const body = await json(response);
+  logUom('details', { publicId: uom.publicId, code: uom.code, type: uom.type, status: uom.status });
   expect(body).toHaveProperty('publicId', uom.publicId);
   expect(body).toHaveProperty('name', uom.name);
   expect(body).toHaveProperty('code', uom.code);
   expect(body).toHaveProperty('type', uom.type);
   expect(body).toHaveProperty('status', uom.status);
+}
+
+export async function fetchUomItems(
+  commercials: _CommercialsService,
+  token: string,
+  filters: Record<string, string | number | boolean | null | undefined>,
+) {
+  const response = await expectStatuses(commercials.listUoms(token, filters), [200]);
+  const body = await json(response);
+  logUom('list', { filters, count: listItems(body).length });
+  return listItems(body);
+}
+
+export function expectUomItems(
+  items: Array<Record<string, unknown>>,
+  predicate: (item: Record<string, unknown>) => boolean,
+  message: string,
+) {
+  expect(items.length, message).toBeGreaterThan(0);
+  expect(items.every(predicate), message).toBeTruthy();
 }
 
 export async function expectUomListed(

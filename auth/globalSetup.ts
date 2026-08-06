@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import _config from '../config/config';
 import { _AuthService } from '../services/authservice';
 import { isJwtExpired } from '../services/requestHelpers';
+import { closeDatabase, hasDatabaseConfig, initializeDatabase } from '../utils/database';
 
 async function writeAuthToken(authFilePath: string, token: string, username: string) {
   await fs.writeFile(
@@ -73,6 +74,16 @@ async function globalSetup(): Promise<void> {
   await fs.writeFile(authFilePath, JSON.stringify(authData, null, 2), 'utf-8');
 
   console.log(`[globalSetup] ✓ Token saved to auth/auth.json`);
+
+  if (!hasDatabaseConfig()) {
+    console.warn('[globalSetup] Skipping database initialization because database credentials are missing.');
+    return;
+  }
+
+  console.log('[globalSetup] Initializing database connection...');
+  await initializeDatabase();
+  await closeDatabase();
+  console.log('[globalSetup] ✓ Database connection ready');
 }
 
 export default globalSetup;
