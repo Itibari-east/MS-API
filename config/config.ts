@@ -8,12 +8,12 @@ interface Config {
   serviceEndpoints: {
     userManagement: string;
     inventoryManagement: string;
+    accountingService: string;
     commercials: string;
   };
   email: string;
   password: string;
 }
-
 const DEV = 'DEV';
 const PROD = 'PRODUCTION';
 const ENV = process.env.ENVIRONMENT || DEV;
@@ -23,12 +23,12 @@ let _config: Config = {
   serviceEndpoints: {
     userManagement: '',
     inventoryManagement: '',
+    accountingService: '',
     commercials: '',
   },
   email: '',
   password: '',
 };
-
 if (ENV.toUpperCase() === DEV) {
   _config = {
     baseEndpoint: DEV_BASE_URL,
@@ -36,16 +36,17 @@ if (ENV.toUpperCase() === DEV) {
     email: _users.common.email,
     password: _users.common.password,
   };
-} else if (ENV.toUpperCase() === PROD) {
-  _config = {
-    baseEndpoint: _prod.common.BASE_URL,
-    serviceEndpoints: {
-      userManagement: `${_prod.common.BASE_URL}/user-management-service`,
-      inventoryManagement: `${_prod.common.BASE_URL}/inventory-management-service`,
-      commercials: `${_prod.common.BASE_URL}/commercials-service`,
-    },
-    email: process.env.MS_USER_EMAIL || 'd.chirchir@itibari.io',
-    password: process.env.MS_USER_PASSWORD || 'Silot777@',
+  } else if (ENV.toUpperCase() === PROD) {
+    _config = {
+      baseEndpoint: _prod.common.BASE_URL,
+      serviceEndpoints: {
+        userManagement: `${_prod.common.BASE_URL}/user-management-service`,
+        inventoryManagement: `${_prod.common.BASE_URL}/inventory-management-service`,
+        accountingService: `${_prod.common.BASE_URL}/accounting-service`,
+        commercials: `${_prod.common.BASE_URL}/commercials-service`,
+      },
+      email: process.env.MS_USER_EMAIL || 'd.chirchir@itibari.io',
+      password: process.env.MS_USER_PASSWORD || 'Silot777@',
   };
 } else {
   throw new Error(`Unknown ENVIRONMENT: ${ENV}`);
