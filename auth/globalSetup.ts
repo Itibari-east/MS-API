@@ -4,6 +4,14 @@ import _config from '../config/config';
 import { _AuthService } from '../services/authservice';
 import { isJwtExpired } from '../services/requestHelpers';
 
+async function writeAuthToken(authFilePath: string, token: string, username: string) {
+  await fs.writeFile(
+    authFilePath,
+    JSON.stringify({ default: { token, username } }, null, 2),
+    'utf-8',
+  );
+}
+
 async function globalSetup(): Promise<void> {
   const authFilePath = path.join(__dirname, 'auth.json');
 
@@ -20,26 +28,29 @@ async function globalSetup(): Promise<void> {
   }
 
   const totpSecret = process.env.MS_TOTP_SECRET;
+  const manualToken = process.env.MS_WEB_BEARER_TOKEN?.trim() ?? '';
 
   if (!_config.email || !_config.password) {
-    await fs.writeFile(
-      authFilePath,
-      JSON.stringify({ default: { token: '', username: _config.email } }, null, 2),
-      'utf-8',
-    );
+    await writeAuthToken(authFilePath, manualToken, _config.email);
     console.warn(
-      '[globalSetup] Skipping token generation. Set the configured email and password to enable authenticated setup.',
+      manualToken
+        ? '[globalSetup] Using MS_WEB_BEARER_TOKEN because configured email/password are missing.'
+        : '[globalSetup] Skipping token generation. Set the configured email and password to enable authenticated setup.',
     );
     return;
   }
 
+  if (manualToken) {
+    await writeAuthToken(authFilePath, manualToken, _config.email);
+    console.log('[globalSetup] ✓ Using bearer token from MS_WEB_BEARER_TOKEN');
+    return;
+  }
+
   if (!totpSecret) {
-    await fs.writeFile(
-      authFilePath,
-      JSON.stringify({ default: { token: '', username: _config.email } }, null, 2),
-      'utf-8',
+    await writeAuthToken(authFilePath, '', _config.email);
+    console.warn(
+      '[globalSetup] Skipping token generation. Set MS_TOTP_SECRET or MS_WEB_BEARER_TOKEN to enable authenticated setup.',
     );
-    console.warn('[globalSetup] Skipping token generation. MS_TOTP_SECRET is required to complete MFA login.');
     return;
   }
 
