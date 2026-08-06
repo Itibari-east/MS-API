@@ -25,17 +25,23 @@ type PermissionChain = {
   privilege: CreatedEntity;
 };
 
-async function expectStatuses<T extends { status(): number }>(responsePromise: Promise<T>, allowedStatuses: number[]) {
+async function expectStatuses<T extends { status(): number; json(): Promise<any> }>(
+  responsePromise: Promise<T>,
+  allowedStatuses: number[],
+) {
   const response = await responsePromise;
   expect(allowedStatuses).toContain(response.status());
   return response;
 }
 
-async function expectOk<T extends { status(): number }>(responsePromise: Promise<T>) {
+async function expectOk<T extends { status(): number; json(): Promise<any> }>(responsePromise: Promise<T>) {
   return expectStatuses(responsePromise, [200]);
 }
 
-async function expectEntityWithCreatedBy<T extends { status(): number }>(responsePromise: Promise<T>, publicId?: string) {
+async function expectEntityWithCreatedBy<T extends { status(): number; json(): Promise<any> }>(
+  responsePromise: Promise<T>,
+  publicId?: string,
+) {
   const response = await expectOk(responsePromise);
   const body = await json(response);
   const createdBy = body.createdBy ?? body.created_by;

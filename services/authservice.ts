@@ -1,4 +1,5 @@
 import { APIResponse } from '@playwright/test';
+import { serviceConstants } from '../constants/endpoints';
 import { _AuthRequests, Channel } from '../requests/auth';
 import { common } from '../utils/common';
 import { extractAuthToken } from './requestHelpers';
@@ -58,7 +59,7 @@ export class _AuthService {
   async login(
     username: string,
     password: string,
-    channel: Channel = 'WEB',
+    channel: Channel = serviceConstants.auth.channel.web,
   ): Promise<APIResponse> {
     const { url, body } = _AuthRequests.login(username, password, channel);
     return common.postResponse(url, body, jsonRequestHeaders());
@@ -113,7 +114,7 @@ export class _AuthService {
     username: string,
     password: string,
     totpCode: string,
-    channel: Channel = 'WEB',
+    channel: Channel = serviceConstants.auth.channel.web,
   ): Promise<MfaVerifyResponse> {
     // Step 1 — credential check
     const loginRes = await this.login(username, password, channel);
@@ -156,7 +157,7 @@ export class _AuthService {
     username: string,
     password: string,
     totpSecret: string,
-    channel: Channel = 'WEB',
+    channel: Channel = serviceConstants.auth.channel.web,
     seedToken = process.env.MS_WEB_BEARER_TOKEN,
   ): Promise<MfaVerifyResponse> {
     const loginRes = await this.login(username, password, channel);
