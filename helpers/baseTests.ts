@@ -7,6 +7,7 @@ import { _UserManagementService } from '../services/userManagement';
 import { _UserManagementFlows } from '../services/userManagementFlows';
 import { _InventoryManagementService } from '../services/inventoryManagement';
 import { _InventoryManagementFlows } from '../services/inventoryManagementFlows';
+import { SupplierApi } from '../services/supplier';
 
 const test = baseTest.extend<{
   common: _common;
@@ -17,6 +18,7 @@ const test = baseTest.extend<{
   userManagementFlows: _UserManagementFlows;
   inventoryManagement: _InventoryManagementService;
   inventoryManagementFlows: _InventoryManagementFlows;
+  supplierApi: SupplierApi;
 }>({
   common: async ({}, use) => {
     await use(new _common());
@@ -41,6 +43,9 @@ const test = baseTest.extend<{
   },
   inventoryManagementFlows: async ({ inventoryManagement, userManagement }, use) => {
     await use(new _InventoryManagementFlows(inventoryManagement, userManagement));
+  },
+  supplierApi: async ({}, use) => {
+    await use(new SupplierApi());
   },
 });
 
