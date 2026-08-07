@@ -131,6 +131,9 @@ export interface SupplierBulkDeactivatePayload {
 
 export interface SupplierListParams extends QueryParams {
   search?: string;
+  name?: string;
+  supplierId?: string;
+  id?: string;
   status?: string;
   leadDays?: number;
   creditTerms?: string;

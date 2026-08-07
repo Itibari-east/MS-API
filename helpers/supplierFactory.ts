@@ -135,18 +135,25 @@ export function buildSupplierDeactivatePayload(reasonCode = SUPPLIER_FIXTURES.re
   return { reasonCode };
 }
 
-export function buildSupplierListParams(search?: string): SupplierListParams {
+type SupplierListFilterInput = string | Partial<SupplierListParams>;
+
+export function buildSupplierListParams(filters: SupplierListFilterInput = {}): SupplierListParams {
+  const filterParams = typeof filters === 'string' ? { search: filters } : filters;
+
   return {
-    search,
-    status: 'ACTIVE',
-    leadDays: 7,
-    creditTerms: SUPPLIER_FIXTURES.creditTermsCode,
-    deliveryPerformance: SUPPLIER_FIXTURES.deliveryPerformanceCode,
-    country: SUPPLIER_FIXTURES.countryCode,
-    city: SUPPLIER_FIXTURES.cityCode,
-    page: 0,
-    size: 20,
-    sort: 'creationTime,DESC',
+    search: filterParams.search ?? filterParams.name ?? filterParams.supplierId ?? filterParams.id,
+    name: filterParams.name,
+    supplierId: filterParams.supplierId,
+    id: filterParams.id,
+    status: filterParams.status ?? 'ACTIVE',
+    leadDays: filterParams.leadDays ?? 7,
+    creditTerms: filterParams.creditTerms ?? SUPPLIER_FIXTURES.creditTermsCode,
+    deliveryPerformance: filterParams.deliveryPerformance ?? SUPPLIER_FIXTURES.deliveryPerformanceCode,
+    country: filterParams.country ?? SUPPLIER_FIXTURES.countryCode,
+    city: filterParams.city ?? SUPPLIER_FIXTURES.cityCode,
+    page: filterParams.page ?? 0,
+    size: filterParams.size ?? 20,
+    sort: filterParams.sort ?? 'creationTime,DESC',
   };
 }
 
