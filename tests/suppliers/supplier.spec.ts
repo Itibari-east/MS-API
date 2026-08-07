@@ -101,6 +101,51 @@ test.describe.serial('Supplier API', () => {
     expect([200, 204]).toContain(deactivateRes.status);
   });
 
+  test('filters suppliers by name and supplier id using search', async ({ supplierApi }) => {
+    const token = getTokenOrSkip();
+    const target = await createCompleteSupplier(supplierApi, token, 'Supplier Search Target');
+    const decoy = await createCompleteSupplier(supplierApi, token, 'Supplier Search Decoy');
+    const targetSupplierId = String(target.draft?.supplierCode ?? target.draft?.supplierId ?? target.publicId);
+
+    const byNameRes = await supplierApi.listSuppliers(token, buildSupplierListParams(target.name ?? ''));
+    expect(byNameRes.status).toBe(200);
+    expect(byNameRes.data.content ?? []).toHaveLength(1);
+    expect(byNameRes.data.content ?? []).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          publicId: target.publicId,
+          supplier: target.name,
+        }),
+      ]),
+    );
+    expect(byNameRes.data.content ?? []).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          publicId: decoy.publicId,
+        }),
+      ]),
+    );
+
+    const byIdRes = await supplierApi.listSuppliers(token, buildSupplierListParams(targetSupplierId));
+    expect(byIdRes.status).toBe(200);
+    expect(byIdRes.data.content ?? []).toHaveLength(1);
+    expect(byIdRes.data.content ?? []).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          publicId: target.publicId,
+          supplierId: targetSupplierId,
+        }),
+      ]),
+    );
+    expect(byIdRes.data.content ?? []).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          publicId: decoy.publicId,
+        }),
+      ]),
+    );
+  });
+
   test('rejects confirming a draft supplier before onboarding is complete', async ({ supplierApi }) => {
     const token = getTokenOrSkip();
     const draft = await createSupplierDraft(supplierApi, token, 'Supplier Draft Only');
