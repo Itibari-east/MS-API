@@ -10,6 +10,7 @@ import { _InventoryManagementFlows } from '../services/inventoryManagementFlows'
 import { SupplierApi } from '../services/supplier';
 import { _AccountingService } from '../services/accounting';
 import { _CommercialsService } from '../services/commercials';
+import { CategoryApi } from '../services/category';
 import { closeDatabase } from '../utils/database';
 
 const test = baseTest.extend<{
@@ -24,6 +25,7 @@ const test = baseTest.extend<{
   supplierApi: SupplierApi;
   accountingService: _AccountingService;
   commercialsService: _CommercialsService;
+  categoryApi: CategoryApi;
 }>({
   common: async ({}, use) => {
     await use(new _common());
@@ -51,11 +53,15 @@ const test = baseTest.extend<{
   },
   supplierApi: async ({}, use) => {
     await use(new SupplierApi());
+  },
   accountingService: async ({}, use) => {
     await use(new _AccountingService());
   },
   commercialsService: async ({}, use) => {
     await use(new _CommercialsService());
+  },
+  categoryApi: async ({}, use) => {
+    await use(new CategoryApi());
   },
 });
 
