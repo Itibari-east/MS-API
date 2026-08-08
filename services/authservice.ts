@@ -3,7 +3,7 @@ import { serviceConstants } from '../constants/endpoints';
 import { _AuthRequests, Channel } from '../requests/auth';
 import { common } from '../utils/common';
 import { extractAuthToken } from './requestHelpers';
-import { generateTotpCode } from '../utils/totp';
+import { generateTotpCandidates, generateTotpCode } from '../utils/totp';
 import _config  from '../config/config';
 
 function jsonRequestHeaders() {
@@ -18,6 +18,10 @@ function authenticatedJsonHeaders(token?: string) {
     ...jsonRequestHeaders(),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
+}
+
+function isInvalidAuthenticatorCode(message: string): boolean {
+  return /invalid authenticator code|bad credentials/i.test(message);
 }
 
 // ─── Response shapes ──────────────────────────────────────────────────────────
@@ -185,19 +189,39 @@ export class _AuthService {
     if (!confirmRes.ok()) {
       throw new Error(`[mfa/setup/confirm] ${confirmRes.status()}: ${await confirmRes.text()}`);
     }
-    const verifyRes = await this.mfaVerify(generateTotpCode(setupSecret), challengeToken);
-    if (!verifyRes.ok()) {
-      throw new Error(`[mfa/verify] ${verifyRes.status()}: ${await verifyRes.text()}`);
+
+    const confirmAccessToken = await extractAuthToken(confirmRes);
+    if (confirmAccessToken) {
+      return {
+        accessToken: confirmAccessToken,
+        username: _config.email,
+      };
     }
 
-    const finalAccessToken = await extractAuthToken(verifyRes);
-    if (!finalAccessToken) {
-      throw new Error('[mfa/verify] Missing access token in response headers');
+    const verifyCandidates = generateTotpCandidates(setupSecret);
+    let verifyErrorText = '';
+
+    for (const candidate of verifyCandidates) {
+      const verifyRes = await this.mfaVerify(candidate, challengeToken);
+      if (verifyRes.ok()) {
+        const finalAccessToken = await extractAuthToken(verifyRes);
+        if (!finalAccessToken) {
+          throw new Error('[mfa/verify] Missing access token in response headers');
+        }
+
+        return {
+          accessToken: finalAccessToken,
+          username: _config.email,
+        };
+      }
+
+      verifyErrorText = await verifyRes.text();
+      if (!isInvalidAuthenticatorCode(verifyErrorText)) {
+        break;
+      }
     }
 
-    return {
-      accessToken: finalAccessToken,
-      username: _config.email,
-    };
+    throw new Error(`[mfa/verify] Failed to verify authenticator code: ${verifyErrorText || 'unknown error'}`);
+
   }
 }
