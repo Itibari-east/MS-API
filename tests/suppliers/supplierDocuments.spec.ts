@@ -3,7 +3,7 @@ import test from '../../helpers/baseTests';
 import { getTokenOrSkip } from '../../helpers/testHelpers';
 import { SUPPLIER_FIXTURES, buildSupplierDocumentExportParams, buildSupplierDocumentListParams, createSupplierWithUploadedDocument } from '../../helpers/supplierFactory';
 
-test.describe.serial('Supplier Documents API', () => {
+test.describe.serial('@supplier Supplier Documents API', () => {
   test.setTimeout(100000);
 
   test('uploads a supplier document and lists it', async ({ supplierApi, accountingService }) => {

@@ -21,7 +21,7 @@ import {
   fetchSubClassItems,
 } from '../../helpers/hierarchyFactory';
 
-test.describe.serial('Commercials Service - Product Hierarchy', () => {
+test.describe.serial('@commercials Commercials Service - Product Hierarchy', () => {
   test.setTimeout(120000);
 
   test('creates, verifies, updates and deactivates the full category-class-subclass hierarchy', async ({

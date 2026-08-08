@@ -3,7 +3,7 @@ import test from '../../helpers/baseTests';
 import { getTokenOrSkip } from '../../helpers/testHelpers';
 import { expectStatuses, requireSupplierPublicId } from '../../utils/accountingTestHelpers';
 
-test.describe('Accounting Service - Supplier Bank Accounts', () => {
+test.describe('@accounting Accounting Service - Supplier Bank Accounts', () => {
   test('replaces supplier bank accounts', async ({ accountingService }) => {
     const token = getTokenOrSkip();
     const supplierPublicId = requireSupplierPublicId();

@@ -1,6 +1,6 @@
 import test from '../../helpers/baseTests';
 
-test.describe('Rejection Codes', () => {
+test.describe('@usermanagement Rejection Codes', () => {
   test('creates rejection codes', async ({ userManagementFlows }) => {
     await userManagementFlows.rejectionCodeCreate();
   });

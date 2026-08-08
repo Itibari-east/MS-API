@@ -12,7 +12,7 @@ import {
 } from '../../utils/commercialsTestHelpers';
 import { expectUomDbRow } from '../../utils/commercialsDb';
 
-test.describe('Commercials Service - UOMs', () => {
+test.describe('@commercials Commercials Service - UOMs', () => {
   test.setTimeout(100000);
   test('creates a UOM', async ({ commercialsService }) => {
     const token = getTokenOrSkip();

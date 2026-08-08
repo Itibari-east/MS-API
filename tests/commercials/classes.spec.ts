@@ -16,7 +16,7 @@ import {
   fetchClassItems,
 } from '../../helpers/hierarchyFactory';
 
-test.describe.serial('Commercials Service - Classes', () => {
+test.describe.serial('@commercials Commercials Service - Classes', () => {
   test.setTimeout(100000);
 
   test('creates a class under an active category and verifies detail, list visibility and update flow', async ({
