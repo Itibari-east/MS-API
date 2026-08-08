@@ -30,7 +30,9 @@ export function buildCategoryUpdatePayload(name: string, description = unique('U
   };
 }
 
-export function buildCategoryStatusPayload(status = serviceConstants.commercials.category.status.active): CategoryStatusPayload {
+export function buildCategoryStatusPayload(
+  status: string = serviceConstants.commercials.category.status.active,
+): CategoryStatusPayload {
   return { status };
 }
 
