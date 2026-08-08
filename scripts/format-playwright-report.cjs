@@ -123,13 +123,18 @@ function truncateText(value, maxLength = 1200) {
   return `${text.slice(0, maxLength).trimEnd()}\n... [truncated ${text.length - maxLength} characters]`;
 }
 
-function codeBlock(label, value, maxLength = 1200) {
+function quotedBlock(label, value, maxLength = 1200) {
   const text = truncateText(value, maxLength);
   if (!text) {
     return '';
   }
 
-  return `*${label}:*\n\`\`\`\n${text}\n\`\`\``;
+  const quotedLines = text
+    .split('\n')
+    .map((line) => `> ${line}`)
+    .join('\n');
+
+  return `*${label}:*\n${quotedLines}`;
 }
 
 function formatAttachments(attachments = []) {
@@ -153,7 +158,7 @@ function formatStream(title, entries) {
     return '';
   }
 
-  return codeBlock(title, content, 1000);
+  return quotedBlock(title, content, 1000);
 }
 
 function formatFailureDetails(test) {
@@ -176,7 +181,7 @@ function formatFailureDetails(test) {
   }
 
   const sections = [];
-  const errorSection = codeBlock('Error', errorParts.join('\n\n') || 'No failure message available', 1600);
+  const errorSection = quotedBlock('Error', errorParts.join('\n\n') || 'No failure message available', 1600);
   if (errorSection) {
     sections.push(errorSection);
   }
