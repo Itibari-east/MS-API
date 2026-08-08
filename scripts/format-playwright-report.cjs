@@ -263,7 +263,7 @@ function formatCoverageNoteForSlack(note) {
   let currentSectionTitle = '';
   let inCodeBlockSection = false;
   let sectionLines = [];
-  const codeBlockSections = new Set(['covered', 'expected failures', 'failed', 'skipped']);
+  const codeBlockSections = new Set(['covered', 'expected failures', 'failed', 'skipped', 'missing coverage']);
 
   const flushSection = () => {
     if (!sectionLines.length) {
@@ -281,7 +281,14 @@ function formatCoverageNoteForSlack(note) {
 
   for (const rawLine of inputLines) {
     const line = rawLine.replace(/\s+$/, '');
+    const titleMatch = line.match(/^#\s+(.+)$/);
     const headingMatch = line.match(/^##\s+(.+)$/);
+
+    if (titleMatch) {
+      flushSection();
+      outputLines.push(`*${titleMatch[1].trim()}*`);
+      continue;
+    }
 
     if (headingMatch) {
       flushSection();
@@ -291,10 +298,16 @@ function formatCoverageNoteForSlack(note) {
       continue;
     }
 
-    if (inCodeBlockSection || currentSectionTitle === 'covered') {
+    if (inCodeBlockSection || currentSectionTitle === 'covered' || currentSectionTitle === 'missing coverage') {
       if (line.trim()) {
         sectionLines.push(line);
       }
+      continue;
+    }
+
+    const dateMatch = line.match(/^Date:\s*(.+)$/i);
+    if (dateMatch) {
+      outputLines.push(`Date: *${dateMatch[1].trim()}*`);
       continue;
     }
 
@@ -398,8 +411,8 @@ function buildSlackMarkdown(report) {
   const expectedFailures = tests.filter((test) => test.expectedStatus === 'failed');
 
   const lines = [];
-  lines.push(`🧪 ${moduleName} Coverage Report`);
-  lines.push(`Date: ${getTodayLabel()}`);
+  lines.push(`🧪 *${moduleName} Coverage Report*`);
+  lines.push(`Date: *${getTodayLabel()}*`);
   if (environment) {
     lines.push(`Environment: *${environment}*`);
   }
@@ -411,7 +424,7 @@ function buildSlackMarkdown(report) {
   );
   lines.push('');
 
-  lines.push('*All runs:*');
+  lines.push('*Pipeline:*');
   for (const domain of Object.keys(byDomain).sort()) {
     const summary = summarizeTests(byDomain[domain]);
     lines.push(formatWorkflowSummaryLine(domain, summary));
@@ -464,7 +477,7 @@ function buildSlackMarkdown(report) {
 
     lines.push('');
     lines.push(formatSectionHeading('Missing Coverage'));
-    lines.push('- See the module coverage note for the planned scenarios still not automated.');
+    lines.push(...formatCodeBlock(['See the module coverage note for the planned scenarios still not automated.']));
     lines.push('');
   }
 
