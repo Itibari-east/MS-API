@@ -18,8 +18,28 @@ function toTitleCase(value) {
 
 function getDomainFromFile(fileName) {
   const normalized = fileName.replace(/\\/g, '/');
-  const match = normalized.match(/(?:^|\/)tests\/([^/]+)/);
-  return match ? toTitleCase(match[1]) : 'Other';
+  const moduleLabels = {
+    auth: 'Auth',
+    accounting: 'Accounting',
+    commercials: 'Commercials',
+    inventory: 'Inventory',
+    suppliers: 'Supplier',
+    supplier: 'Supplier',
+    usermanagement: 'User Management',
+  };
+
+  const testsMatch = normalized.match(/(?:^|\/)tests\/([^/]+)/);
+  if (testsMatch) {
+    return moduleLabels[testsMatch[1]] || toTitleCase(testsMatch[1]);
+  }
+
+  const parts = normalized.split('/').filter(Boolean);
+  const modulePart = parts.find((part) => moduleLabels[part] || ['auth', 'accounting', 'commercials', 'inventory', 'suppliers', 'supplier', 'usermanagement'].includes(part));
+  if (modulePart) {
+    return moduleLabels[modulePart] || toTitleCase(modulePart);
+  }
+
+  return 'Other';
 }
 
 function flattenTests(suites, bucket = []) {
