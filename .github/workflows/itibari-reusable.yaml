@@ -10,6 +10,9 @@ on:
       moduleName:
         type: string
         required: true
+      moduleSlug:
+        type: string
+        required: true
       shardIndex:
         type: string
         required: true
@@ -75,7 +78,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: blob-report-${{ inputs.moduleName }}-${{ inputs.shardIndex }}
+          name: blob-report-${{ inputs.moduleSlug }}-${{ inputs.shardIndex }}
           path: |
             blob-report/
             test-results/

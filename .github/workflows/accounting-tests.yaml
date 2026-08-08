@@ -19,6 +19,7 @@ jobs:
     with:
       tag: "@accounting"
       moduleName: "Accounting API"
+      moduleSlug: accounting
       environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'PRODUCTION' }}
       shardIndex: 1
       shardTotal: 1
@@ -46,7 +47,7 @@ jobs:
       - name: Download shard artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: blob-report-Accounting API-*
+          pattern: blob-report-accounting-*
           path: all-blob-reports
           merge-multiple: true
           if-no-files-found: warn

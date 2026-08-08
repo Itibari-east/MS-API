@@ -23,6 +23,7 @@ jobs:
     with:
       tag: "@commercials"
       moduleName: "Commercials API"
+      moduleSlug: commercials
       environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'PRODUCTION' }}
       shardIndex: ${{ matrix.shardIndex }}
       shardTotal: 4
@@ -50,7 +51,7 @@ jobs:
       - name: Download shard artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: blob-report-Commercials API-*
+          pattern: blob-report-commercials-*
           path: all-blob-reports
           merge-multiple: true
           if-no-files-found: warn
