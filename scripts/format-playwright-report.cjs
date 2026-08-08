@@ -396,6 +396,67 @@ function formatWorkflowSummaryLine(domain, summary) {
   return `${icon} ${domain} — ${summary.passed}/${summary.total} passed, ${summary.failed} failed, ${summary.skipped} skipped`;
 }
 
+function formatPassRate(passed, total) {
+  if (!total) {
+    return '0%';
+  }
+
+  return `${Math.round((passed / total) * 100)}%`;
+}
+
+function buildExecutiveSummaryLines(workflowSummaries, totals) {
+  const rows = workflowSummaries.map(({ domain, summary }) => ({
+    module: summary.failed > 0 ? `❌ ${domain}` : summary.skipped > 0 ? `⚠️ ${domain}` : `✅ ${domain}`,
+    total: String(summary.total),
+    passed: String(summary.passed),
+    failed: String(summary.failed),
+    skipped: String(summary.skipped),
+    flaky: String(summary.flaky),
+    passRate: formatPassRate(summary.passed, summary.total),
+  }));
+
+  rows.push({
+    module: 'Overall',
+    total: String(totals.total),
+    passed: String(totals.passed),
+    failed: String(totals.failed),
+    skipped: String(totals.skipped),
+    flaky: String(totals.flaky),
+    passRate: formatPassRate(totals.passed, totals.total),
+  });
+
+  const headers = ['Module', 'Total', 'Passed', 'Failed', 'Skipped', 'Flaky', 'Pass Rate'];
+  const widths = headers.map((header, index) =>
+    Math.max(
+      header.length,
+      ...rows.map((row) => String([row.module, row.total, row.passed, row.failed, row.skipped, row.flaky, row.passRate][index]).length),
+    ),
+  );
+
+  const formatRow = (cells) => cells.map((cell, index) => String(cell).padEnd(widths[index], ' ')).join('   ');
+  const separator = widths.map((width) => '-'.repeat(width)).join('   ');
+
+  const lines = [];
+  lines.push('*Executive Summary*');
+  const topSummary = [`🟢 *${totals.passed}* Passed`, `🔴 *${totals.failed}* Failed`, `⏭️ *${totals.skipped}* Skipped`, `Total: *${totals.total}*`];
+  if (totals.flaky > 0) {
+    topSummary.push(`🟡 *${totals.flaky}* Flaky`);
+  }
+  lines.push(topSummary.join('   '));
+  lines.push(`Overall Pass Rate: *${formatPassRate(totals.passed, totals.total)}*`);
+  lines.push('');
+  lines.push('*Module Summary*');
+  lines.push('```');
+  lines.push(formatRow(headers));
+  lines.push(separator);
+  for (const row of rows) {
+    lines.push(formatRow([row.module, row.total, row.passed, row.failed, row.skipped, row.flaky, row.passRate]));
+  }
+  lines.push('```');
+
+  return lines;
+}
+
 function sortWorkflowSummaries(summaries) {
   return [...summaries].sort((left, right) => {
     if (left.summary.failed !== right.summary.failed) {
@@ -442,6 +503,9 @@ function buildSlackMarkdown(report) {
   lines.push(
     `✅ *${totals.passed}*  ❌ *${totals.failed}*  ⏩ *${totals.skipped}*  🟡 *${totals.flaky}*  Total: *${totals.total}*`,
   );
+  lines.push('');
+
+  lines.push(...buildExecutiveSummaryLines(workflowSummaries, totals));
   lines.push('');
 
   lines.push('*Overall summary:*');
