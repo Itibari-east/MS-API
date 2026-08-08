@@ -50,7 +50,6 @@ jobs:
           pattern: blob-report-inventory-*
           path: all-blob-reports
           merge-multiple: true
-          if-no-files-found: warn
 
       - name: Verify Slack webhook
         run: |
