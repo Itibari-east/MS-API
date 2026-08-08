@@ -435,7 +435,6 @@ function buildExecutiveSummaryLines(workflowSummaries, totals) {
   const separator = widths.map((width) => '-'.repeat(width)).join('   ');
 
   const lines = [];
-  lines.push('*Executive Summary*');
   lines.push(`🟢 *${totals.passed}* Passed   🔴 *${totals.failed}* Failed   ⏭️ *${totals.skipped}* Skipped   Total: *${totals.total}*`);
   lines.push(`Overall Pass Rate: *${formatPassRate(totals.passed, totals.total)}*`);
   lines.push('');
@@ -447,6 +446,52 @@ function buildExecutiveSummaryLines(workflowSummaries, totals) {
     lines.push(formatRow([row.module, row.total, row.passed, row.failed, row.skipped, row.passRate]));
   }
   lines.push('```');
+
+  return lines;
+}
+
+function formatTestBullets(tests) {
+  return formatCodeBlock(
+    tests.length
+      ? tests.map((test) => `- ${formatTestTitle(test)}${test.file ? ` (${formatTestLocation(test)})` : ''}`)
+      : ['- None'],
+  );
+}
+
+function buildModuleBreakdownLines(domain, tests, coverageNote) {
+  const coveredTests = tests.filter((test) => test.status === 'passed');
+  const failedTests = tests.filter((test) => test.status === 'failed');
+  const skippedTests = tests.filter((test) => test.status === 'skipped');
+  const expectedFailures = tests.filter((test) => test.expectedStatus === 'failed');
+
+  const lines = [];
+  lines.push(`*${domain}*`);
+
+  if (coverageNote) {
+    lines.push(formatCoverageNoteForSlack(coverageNote));
+    lines.push('');
+    return lines;
+  }
+
+  lines.push(formatSectionHeading('Covered'));
+  lines.push(...formatTestBullets(coveredTests));
+  lines.push('');
+
+  lines.push(formatSectionHeading('Failed'));
+  lines.push(...formatTestBullets(failedTests));
+  lines.push('');
+
+  lines.push(formatSectionHeading('Skipped'));
+  lines.push(...formatTestBullets(skippedTests));
+  lines.push('');
+
+  lines.push(formatSectionHeading('Expected Failures'));
+  lines.push(...formatTestBullets(expectedFailures));
+  lines.push('');
+
+  lines.push(formatSectionHeading('Missing Coverage'));
+  lines.push(...formatCodeBlock(['See the module coverage note for the planned scenarios still not automated.']));
+  lines.push('');
 
   return lines;
 }
@@ -474,10 +519,6 @@ function buildSlackMarkdown(report) {
   const githubRunUrl = getGitHubRunUrl();
   const coverageNotePath = resolveCoverageNotePath();
   const coverageNote = readTextFile(coverageNotePath);
-  const coveredTests = tests.filter((test) => test.status === 'passed');
-  const failedTests = tests.filter((test) => test.status === 'failed');
-  const skippedTests = tests.filter((test) => test.status === 'skipped');
-  const expectedFailures = tests.filter((test) => test.expectedStatus === 'failed');
   const workflowSummaries = sortWorkflowSummaries(
     Object.keys(byDomain).map((domain) => ({
       domain,
@@ -499,63 +540,22 @@ function buildSlackMarkdown(report) {
   );
   lines.push('');
 
-  lines.push(...buildExecutiveSummaryLines(workflowSummaries, totals));
-  lines.push('');
-
   lines.push('*Module breakdown:*');
-  if (coverageNote) {
+  if (coverageNote && workflowSummaries.length <= 1) {
     lines.push(formatCoverageNoteForSlack(coverageNote));
     lines.push('');
   } else {
-    lines.push(formatSectionHeading('Covered'));
-    lines.push(
-      ...formatCodeBlock(
-        coveredTests.length
-          ? coveredTests.map((test) => `- ${formatTestTitle(test)}${test.file ? ` (${formatTestLocation(test)})` : ''}`)
-          : ['- None'],
-      ),
-    );
-    lines.push('');
-
-    lines.push('');
-    lines.push(formatSectionHeading('Failed'));
-    lines.push(
-      ...formatCodeBlock(
-        failedTests.length
-          ? failedTests.map((test) => `- ${formatTestTitle(test)}${test.file ? ` (${formatTestLocation(test)})` : ''}`)
-          : ['- None'],
-      ),
-    );
-    lines.push('');
-
-    lines.push(formatSectionHeading('Skipped'));
-    lines.push(
-      ...formatCodeBlock(
-        skippedTests.length
-          ? skippedTests.map((test) => `- ${formatTestTitle(test)}${test.file ? ` (${formatTestLocation(test)})` : ''}`)
-          : ['- None'],
-      ),
-    );
-    lines.push('');
-
-    lines.push(formatSectionHeading('Expected Failures'));
-    lines.push(
-      ...formatCodeBlock(
-        expectedFailures.length
-          ? expectedFailures.map((test) => `- ${formatTestTitle(test)}${test.file ? ` (${formatTestLocation(test)})` : ''}`)
-          : ['- None'],
-      ),
-    );
-
-    lines.push('');
-    lines.push(formatSectionHeading('Missing Coverage'));
-    lines.push(...formatCodeBlock(['See the module coverage note for the planned scenarios still not automated.']));
-    lines.push('');
+    for (const { domain } of workflowSummaries) {
+      lines.push(...buildModuleBreakdownLines(domain, byDomain[domain] || [], ''));
+    }
   }
 
   if (githubRunUrl) {
     lines.push(`*Logs:* <${githubRunUrl}|View GitHub run>`);
   }
+
+  lines.push('');
+  lines.push(...buildExecutiveSummaryLines(workflowSummaries, totals));
 
   return lines.join('\n').trim();
 }
