@@ -175,7 +175,11 @@ test.describe('Commercials Service - UOMs', () => {
     );
     expect(items.some((item) => item.publicId === weightUom.publicId)).toBeTruthy();
     expect(
-      items.every((item) => serviceConstants.commercials.uom.allowedTypes.includes(String(item.type))),
+      items.every((item) =>
+        serviceConstants.commercials.uom.allowedTypes.includes(
+          String(item.type) as (typeof serviceConstants.commercials.uom.allowedTypes)[number],
+        ),
+      ),
     ).toBeTruthy();
   });
 
