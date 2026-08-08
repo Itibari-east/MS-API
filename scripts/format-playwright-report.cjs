@@ -100,6 +100,31 @@ function formatCodeBlock(lines) {
   return ['```', ...lines, '```'];
 }
 
+function getCoveragePrefix() {
+  const moduleName = String(process.env.PLAYWRIGHT_MODULE_NAME || '').toLowerCase();
+  if (moduleName.includes('auth')) return 'login';
+  if (moduleName.includes('supplier')) return 'supplier';
+  if (moduleName.includes('user')) return 'user';
+  if (moduleName.includes('commercial')) return 'commercial';
+  if (moduleName.includes('inventory')) return 'inventory';
+  if (moduleName.includes('accounting')) return 'accounting';
+  return '';
+}
+
+function prefixCoverageItem(line) {
+  const trimmed = String(line || '').trim();
+  if (!/^-\s+(returns|rejects)\b/i.test(trimmed)) {
+    return trimmed;
+  }
+
+  const prefix = getCoveragePrefix();
+  if (!prefix) {
+    return trimmed;
+  }
+
+  return trimmed.replace(/^-\s+/, `- ${prefix} `);
+}
+
 function normalizeRouteLabel(route) {
   const cleanedRoute = String(route || '')
     .replace(/\?.*$/, '')
@@ -235,16 +260,23 @@ function formatCoverageNoteForSlack(note) {
     .replace(/\r\n/g, '\n')
     .split('\n');
   const outputLines = [];
-  let inCoveredSection = false;
-  let coveredBlockLines = [];
+  let currentSectionTitle = '';
+  let inCodeBlockSection = false;
+  let sectionLines = [];
+  const codeBlockSections = new Set(['covered', 'expected failures', 'failed', 'skipped']);
 
-  const flushCoveredBlock = () => {
-    if (!coveredBlockLines.length) {
+  const flushSection = () => {
+    if (!sectionLines.length) {
       return;
     }
 
-    outputLines.push(...formatCodeBlock(coveredBlockLines));
-    coveredBlockLines = [];
+    if (inCodeBlockSection) {
+      outputLines.push(...formatCodeBlock(sectionLines.map(prefixCoverageItem)));
+    } else {
+      outputLines.push(...sectionLines);
+    }
+
+    sectionLines = [];
   };
 
   for (const rawLine of inputLines) {
@@ -252,15 +284,16 @@ function formatCoverageNoteForSlack(note) {
     const headingMatch = line.match(/^##\s+(.+)$/);
 
     if (headingMatch) {
-      flushCoveredBlock();
-      inCoveredSection = headingMatch[1].trim().toLowerCase() === 'covered';
+      flushSection();
+      currentSectionTitle = headingMatch[1].trim().toLowerCase();
+      inCodeBlockSection = codeBlockSections.has(currentSectionTitle);
       outputLines.push(formatSectionHeading(headingMatch[1].trim()));
       continue;
     }
 
-    if (inCoveredSection) {
+    if (inCodeBlockSection || currentSectionTitle === 'covered') {
       if (line.trim()) {
-        coveredBlockLines.push(line);
+        sectionLines.push(line);
       }
       continue;
     }
@@ -268,7 +301,7 @@ function formatCoverageNoteForSlack(note) {
     outputLines.push(line);
   }
 
-  flushCoveredBlock();
+  flushSection();
 
   return outputLines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
 }
@@ -304,7 +337,6 @@ function normalizeResult(test) {
   const results = test.results || [];
   const lastResult = results[results.length - 1] || {};
   const hasFailedResult = results.some((result) => result.status === 'failed' || result.status === 'timedOut');
-  const hasSkippedResult = results.some((result) => result.status === 'skipped');
   const status =
     lastResult.status === 'failed' || lastResult.status === 'timedOut'
       ? 'failed'
@@ -346,11 +378,6 @@ function summarizeTests(tests) {
   );
 }
 
-function formatFailure(test) {
-  const location = test.file ? ` (${formatTestLocation(test)})` : '';
-  return `- ${formatTestTitle(test)}${location}`;
-}
-
 function buildSlackMarkdown(report) {
   const tests = flattenTests(report.suites || []).map(normalizeResult);
   const byDomain = groupByDomain(tests);
@@ -361,6 +388,8 @@ function buildSlackMarkdown(report) {
   const coverageNotePath = resolveCoverageNotePath();
   const coverageNote = readTextFile(coverageNotePath);
   const coveredTests = tests.filter((test) => test.status === 'passed');
+  const failedTests = tests.filter((test) => test.status === 'failed');
+  const skippedTests = tests.filter((test) => test.status === 'skipped');
   const expectedFailures = tests.filter((test) => test.expectedStatus === 'failed');
 
   const lines = [];
@@ -377,49 +406,63 @@ function buildSlackMarkdown(report) {
   );
   lines.push('');
 
+  lines.push('*Per-workflow:*');
+  for (const domain of Object.keys(byDomain).sort()) {
+    const summary = summarizeTests(byDomain[domain]);
+    const icon = summary.failed > 0 ? '❌' : '✅';
+    lines.push(
+      `${icon} ${domain} — ${summary.passed}/${summary.total} passed, ${summary.failed} failed, ${summary.skipped} skipped`,
+    );
+  }
+  lines.push('');
+
   if (coverageNote) {
     lines.push(formatCoverageNoteForSlack(coverageNote));
     lines.push('');
   } else {
     lines.push(formatSectionHeading('Covered'));
-      lines.push(
-        ...formatCodeBlock(
-          coveredTests.length
+    lines.push(
+      ...formatCodeBlock(
+        coveredTests.length
           ? coveredTests.map((test) => `- ${formatTestTitle(test)}${test.file ? ` (${formatTestLocation(test)})` : ''}`)
           : ['- None'],
       ),
     );
     lines.push('');
+
+    lines.push('');
+    lines.push(formatSectionHeading('Failed'));
+    lines.push(
+      ...formatCodeBlock(
+        failedTests.length
+          ? failedTests.map((test) => `- ${formatTestTitle(test)}${test.file ? ` (${formatTestLocation(test)})` : ''}`)
+          : ['- None'],
+      ),
+    );
+    lines.push('');
+
+    lines.push(formatSectionHeading('Skipped'));
+    lines.push(
+      ...formatCodeBlock(
+        skippedTests.length
+          ? skippedTests.map((test) => `- ${formatTestTitle(test)}${test.file ? ` (${formatTestLocation(test)})` : ''}`)
+          : ['- None'],
+      ),
+    );
+    lines.push('');
+
     lines.push(formatSectionHeading('Expected Failures'));
-    if (expectedFailures.length) {
-      for (const test of expectedFailures) {
-        lines.push(formatFailure(test));
-      }
-    } else {
-      lines.push('- None');
-    }
+    lines.push(
+      ...formatCodeBlock(
+        expectedFailures.length
+          ? expectedFailures.map((test) => `- ${formatTestTitle(test)}${test.file ? ` (${formatTestLocation(test)})` : ''}`)
+          : ['- None'],
+      ),
+    );
 
     lines.push('');
     lines.push(formatSectionHeading('Missing Coverage'));
     lines.push('- See the module coverage note for the planned scenarios still not automated.');
-    lines.push('');
-  }
-
-  lines.push(formatSectionHeading('Current Run'));
-  for (const domain of Object.keys(byDomain).sort()) {
-    const domainTests = byDomain[domain];
-    const summary = summarizeTests(domainTests);
-    lines.push(`*${domain}*`);
-    lines.push(`✅ *${summary.passed}*  ❌ *${summary.failed}*  ⏩ *${summary.skipped}*  🟡 *${summary.flaky}*`);
-
-    const domainFailures = domainTests.filter((test) => test.status === 'failed');
-    if (domainFailures.length) {
-      lines.push('*Failed endpoints:*');
-      for (const failure of domainFailures) {
-        lines.push(formatFailure(failure));
-      }
-    }
-
     lines.push('');
   }
 
