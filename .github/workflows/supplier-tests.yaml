@@ -13,9 +13,6 @@ on:
         options: [PRODUCTION, DEV]
         default: PRODUCTION
 
-env:
-  DEFAULT_ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'PRODUCTION' }}
-
 jobs:
   run-playwright-tests:
     strategy:
@@ -26,7 +23,7 @@ jobs:
     with:
       tag: "@supplier"
       moduleName: "Supplier API"
-      environment: ${{ env.DEFAULT_ENVIRONMENT }}
+      environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'PRODUCTION' }}
       shardIndex: ${{ matrix.shardIndex }}
       shardTotal: 2
       node-version: 20
@@ -45,7 +42,7 @@ jobs:
     env:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       PLAYWRIGHT_MODULE_NAME: Supplier API
-      PLAYWRIGHT_ENVIRONMENT: ${{ env.DEFAULT_ENVIRONMENT }}
+      PLAYWRIGHT_ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'PRODUCTION' }}
     steps:
       - name: Download shard artifacts
         uses: actions/download-artifact@v4

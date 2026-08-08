@@ -13,16 +13,13 @@ on:
         options: [PRODUCTION, DEV]
         default: PRODUCTION
 
-env:
-  DEFAULT_ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'PRODUCTION' }}
-
 jobs:
   run-playwright-tests:
     uses: ./.github/workflows/itibari-reusable.yaml
     with:
       tag: "@inventory"
       moduleName: "Inventory API"
-      environment: ${{ env.DEFAULT_ENVIRONMENT }}
+      environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'PRODUCTION' }}
       shardIndex: 1
       shardTotal: 1
       node-version: 20
@@ -41,7 +38,7 @@ jobs:
     env:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       PLAYWRIGHT_MODULE_NAME: Inventory API
-      PLAYWRIGHT_ENVIRONMENT: ${{ env.DEFAULT_ENVIRONMENT }}
+      PLAYWRIGHT_ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'PRODUCTION' }}
     steps:
       - name: Download shard artifacts
         uses: actions/download-artifact@v4
