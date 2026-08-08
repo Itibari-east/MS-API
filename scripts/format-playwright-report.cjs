@@ -67,7 +67,11 @@ function getDomainFromFile(fileName) {
 
   const testsMatch = normalized.match(/(?:^|\/)tests\/([^/]+)/);
   if (testsMatch) {
-    return moduleLabels[testsMatch[1]] || toTitleCase(testsMatch[1]);
+    const testName = testsMatch[1]
+      .replace(/\.spec\.[^.]+$/i, '')
+      .replace(/\.spec$/i, '')
+      .replace(/\.[^.]+$/i, '');
+    return moduleLabels[testName] || toTitleCase(testName);
   }
 
   const parts = normalized.split('/').filter(Boolean);
@@ -77,6 +81,98 @@ function getDomainFromFile(fileName) {
   }
 
   return 'Other';
+}
+
+function formatTestLocation(test) {
+  if (!test.file) {
+    return '';
+  }
+
+  const fileName = path.basename(test.file);
+  return `${fileName}:${test.line || 1}`;
+}
+
+function formatSectionHeading(title) {
+  return `*## ${title}*`;
+}
+
+function formatCodeBlock(lines) {
+  return ['```', ...lines, '```'];
+}
+
+function normalizeRouteLabel(route) {
+  const cleanedRoute = String(route || '')
+    .replace(/\?.*$/, '')
+    .replace(/#.*$/, '')
+    .replace(/^\/+/, '')
+    .trim();
+
+  if (!cleanedRoute) {
+    return '';
+  }
+
+  const segments = cleanedRoute
+    .split('/')
+    .filter(Boolean)
+    .map((segment) =>
+      segment
+        .replace(/([a-z])([A-Z])/g, '$1 $2')
+        .replace(/[-_]+/g, ' ')
+        .trim(),
+    );
+
+  const last = (segments[segments.length - 1] || '').toLowerCase();
+  const previous = (segments[segments.length - 2] || '').toLowerCase();
+
+  if (last === 'login') return 'login';
+  if (last === 'verify' && previous === 'mfa') return 'mfa verify';
+  if (last === 'setup' && previous === 'mfa') return 'mfa setup';
+  if (last === 'confirm' && previous === 'setup' && segments.some((segment) => segment.toLowerCase() === 'mfa')) {
+    return 'mfa setup confirm';
+  }
+  if (last === 'forget password' || last === 'forgetpassword' || last === 'forgot password') {
+    return 'forgot password';
+  }
+  if (segments.length >= 2) {
+    return `${segments[segments.length - 2]} ${segments[segments.length - 1]}`.trim();
+  }
+
+  return segments[0] || '';
+}
+
+function getEndpointLabelFromSuiteTitles(suiteTitles = [], fileName = '') {
+  const routeTitle = [...suiteTitles].reverse().find((title) => /\b(GET|POST|PUT|PATCH|DELETE)\s+\/?/i.test(title));
+
+  if (routeTitle) {
+    const match = routeTitle.match(/\b(?:GET|POST|PUT|PATCH|DELETE)\s+(.+)$/i);
+    if (match?.[1]) {
+      const label = normalizeRouteLabel(match[1]);
+      if (label) {
+        return label;
+      }
+    }
+  }
+
+  const normalizedFile = path.basename(fileName || '').toLowerCase();
+  if (normalizedFile === 'auth.spec.ts') return 'login';
+  if (normalizedFile.includes('supplier')) return 'supplier';
+  if (normalizedFile.includes('user')) return 'user';
+
+  return '';
+}
+
+function formatTestTitle(test) {
+  const title = stripAnsi(test.title || 'Unnamed test').trim();
+  if (!/^(returns|rejects)\b/i.test(title)) {
+    return title;
+  }
+
+  const endpointLabel = getEndpointLabelFromSuiteTitles(test.suiteTitles || [], test.file);
+  if (!endpointLabel) {
+    return title;
+  }
+
+  return `${endpointLabel} ${title}`;
 }
 
 function resolveCoverageNotePath() {
@@ -134,18 +230,65 @@ function readTextFile(filePath) {
   return fs.readFileSync(filePath, 'utf8').trim();
 }
 
-function flattenTests(suites, bucket = []) {
+function formatCoverageNoteForSlack(note) {
+  const inputLines = String(note || '')
+    .replace(/\r\n/g, '\n')
+    .split('\n');
+  const outputLines = [];
+  let inCoveredSection = false;
+  let coveredBlockLines = [];
+
+  const flushCoveredBlock = () => {
+    if (!coveredBlockLines.length) {
+      return;
+    }
+
+    outputLines.push(...formatCodeBlock(coveredBlockLines));
+    coveredBlockLines = [];
+  };
+
+  for (const rawLine of inputLines) {
+    const line = rawLine.replace(/\s+$/, '');
+    const headingMatch = line.match(/^##\s+(.+)$/);
+
+    if (headingMatch) {
+      flushCoveredBlock();
+      inCoveredSection = headingMatch[1].trim().toLowerCase() === 'covered';
+      outputLines.push(formatSectionHeading(headingMatch[1].trim()));
+      continue;
+    }
+
+    if (inCoveredSection) {
+      if (line.trim()) {
+        coveredBlockLines.push(line);
+      }
+      continue;
+    }
+
+    outputLines.push(line);
+  }
+
+  flushCoveredBlock();
+
+  return outputLines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function flattenTests(suites, bucket = [], ancestors = []) {
   for (const suite of suites || []) {
+    const suiteTitles = suite.title ? [...ancestors, suite.title] : ancestors;
+
     if (Array.isArray(suite.suites) && suite.suites.length) {
-      flattenTests(suite.suites, bucket);
+      flattenTests(suite.suites, bucket, suiteTitles);
     }
 
     for (const spec of suite.specs || []) {
+      const specTitles = spec.title ? [...suiteTitles, spec.title] : suiteTitles;
       for (const test of spec.tests || []) {
         bucket.push({
           title: spec.title || test.title || 'Unnamed test',
           file: spec.location?.file || suite.file || '',
           line: spec.location?.line || test.location?.line || 0,
+          suiteTitles: specTitles,
           projectName: test.projectName || '',
           expectedStatus: test.expectedStatus || 'passed',
           results: test.results || [],
@@ -204,20 +347,21 @@ function summarizeTests(tests) {
 }
 
 function formatFailure(test) {
-  const location = test.file ? ` (${path.relative(process.cwd(), test.file)}:${test.line || 1})` : '';
-  return `- ${test.title}${location}`;
+  const location = test.file ? ` (${formatTestLocation(test)})` : '';
+  return `- ${formatTestTitle(test)}${location}`;
 }
 
 function buildSlackMarkdown(report) {
   const tests = flattenTests(report.suites || []).map(normalizeResult);
   const byDomain = groupByDomain(tests);
   const totals = summarizeTests(tests);
-  const failures = tests.filter((test) => test.status === 'failed');
   const moduleName = process.env.PLAYWRIGHT_MODULE_NAME?.trim() || 'Playwright API';
   const environment = process.env.PLAYWRIGHT_ENVIRONMENT?.trim() || '';
   const githubRunUrl = getGitHubRunUrl();
   const coverageNotePath = resolveCoverageNotePath();
   const coverageNote = readTextFile(coverageNotePath);
+  const coveredTests = tests.filter((test) => test.status === 'passed');
+  const expectedFailures = tests.filter((test) => test.expectedStatus === 'failed');
 
   const lines = [];
   lines.push(`🧪 ${moduleName} Coverage Report`);
@@ -234,22 +378,19 @@ function buildSlackMarkdown(report) {
   lines.push('');
 
   if (coverageNote) {
-    lines.push(coverageNote);
+    lines.push(formatCoverageNoteForSlack(coverageNote));
     lines.push('');
   } else {
-    lines.push('## Covered');
-    const coveredTests = tests.filter((test) => test.status === 'passed');
-    if (coveredTests.length) {
-      for (const test of coveredTests) {
-        lines.push(formatFailure(test).replace(/^-\s*/, '- '));
-      }
-    } else {
-      lines.push('- None');
-    }
-
+    lines.push(formatSectionHeading('Covered'));
+      lines.push(
+        ...formatCodeBlock(
+          coveredTests.length
+          ? coveredTests.map((test) => `- ${formatTestTitle(test)}${test.file ? ` (${formatTestLocation(test)})` : ''}`)
+          : ['- None'],
+      ),
+    );
     lines.push('');
-    lines.push('## Expected Failures');
-    const expectedFailures = tests.filter((test) => test.expectedStatus === 'failed');
+    lines.push(formatSectionHeading('Expected Failures'));
     if (expectedFailures.length) {
       for (const test of expectedFailures) {
         lines.push(formatFailure(test));
@@ -259,12 +400,12 @@ function buildSlackMarkdown(report) {
     }
 
     lines.push('');
-    lines.push('## Missing Coverage');
+    lines.push(formatSectionHeading('Missing Coverage'));
     lines.push('- See the module coverage note for the planned scenarios still not automated.');
     lines.push('');
   }
 
-  lines.push('## Current Run');
+  lines.push(formatSectionHeading('Current Run'));
   for (const domain of Object.keys(byDomain).sort()) {
     const domainTests = byDomain[domain];
     const summary = summarizeTests(domainTests);
@@ -273,7 +414,7 @@ function buildSlackMarkdown(report) {
 
     const domainFailures = domainTests.filter((test) => test.status === 'failed');
     if (domainFailures.length) {
-      lines.push('Failed endpoints:');
+      lines.push('*Failed endpoints:*');
       for (const failure of domainFailures) {
         lines.push(formatFailure(failure));
       }
@@ -283,7 +424,7 @@ function buildSlackMarkdown(report) {
   }
 
   if (githubRunUrl) {
-    lines.push(`Logs: <${githubRunUrl}|View GitHub run>`);
+    lines.push(`*Logs:* <${githubRunUrl}|View GitHub run>`);
   }
 
   return lines.join('\n').trim();
