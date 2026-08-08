@@ -9,6 +9,7 @@
   "scripts": {
     "test:api": "playwright test",
     "test:api:headed-report": "playwright test && playwright show-report",
+    "report:slack": "node scripts/format-playwright-report.cjs",
     "report:merge": "playwright merge-reports --reporter html ./all-blob-reports"
   },
   "keywords": [],
