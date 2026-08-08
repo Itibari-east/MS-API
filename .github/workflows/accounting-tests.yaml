@@ -51,6 +51,16 @@ jobs:
           path: all-blob-reports
           merge-multiple: true
 
+      - name: Flatten blob report artifacts
+        run: |
+          find all-blob-reports -mindepth 2 -type f -name '*.zip' -exec mv -n {} all-blob-reports/ \;
+          find all-blob-reports -mindepth 1 -type d -empty -delete
+          if ! find all-blob-reports -maxdepth 1 -type f -name '*.zip' | grep -q .; then
+            echo "::error::No blob report zip files found in all-blob-reports"
+            find all-blob-reports -maxdepth 4 -print
+            exit 1
+          fi
+
       - name: Verify Slack webhook
         run: |
           if [ -z "$SLACK_WEBHOOK_URL" ]; then
