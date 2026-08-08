@@ -1,24 +1,26 @@
-export const DEV_BASE_URL = process.env.MS_DEV_BASE_URL || 'https://api-micro-dev.itibari.io';
+import { joinUrl, normalizeBaseUrl } from '../utils/url';
+
+export const DEV_BASE_URL = normalizeBaseUrl(process.env.MS_DEV_BASE_URL || 'https://api-micro-dev.itibari.io');
 
 export const SERVICE_ENDPOINTS = {
-  userManagement: `${DEV_BASE_URL}/user-management-service`,
-  inventoryManagement: `${DEV_BASE_URL}/inventory-management-service`,
-  accountingService: `${DEV_BASE_URL}/api/v1`,
-  commercials: `${DEV_BASE_URL}/commercials-service`,
+  userManagement: joinUrl(DEV_BASE_URL, 'user-management-service'),
+  inventoryManagement: joinUrl(DEV_BASE_URL, 'inventory-management-service'),
+  accountingService: joinUrl(DEV_BASE_URL, 'api/v1'),
+  commercials: joinUrl(DEV_BASE_URL, 'commercials-service'),
 };
 
 export const ENDPOINTS = {
   health: {
-    status: () => `${DEV_BASE_URL}/health`,
+    status: () => joinUrl(DEV_BASE_URL, 'health'),
   },
   auth: {
-    login: () => `${DEV_BASE_URL}/login`,
+    login: () => joinUrl(DEV_BASE_URL, 'api/v1', 'login'),
     forgotPassword: (username: string) =>
-      `${DEV_BASE_URL}/login/forgetPassword?username=${encodeURIComponent(username)}`,
+      `${joinUrl(DEV_BASE_URL, 'api/v1', 'login/forgetPassword')}?username=${encodeURIComponent(username)}`,
     mfa: {
-      setup: () => `${DEV_BASE_URL}/auth/mfa/setup`,
-      setupConfirm: () => `${DEV_BASE_URL}/auth/mfa/setup/confirm`,
-      verify: () => `${DEV_BASE_URL}/auth/mfa/verify`,
+      setup: () => joinUrl(DEV_BASE_URL, 'api/v1', 'auth/mfa/setup'),
+      setupConfirm: () => joinUrl(DEV_BASE_URL, 'api/v1', 'auth/mfa/setup/confirm'),
+      verify: () => joinUrl(DEV_BASE_URL, 'api/v1', 'auth/mfa/verify'),
     },
   },
 };
