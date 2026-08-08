@@ -101,9 +101,14 @@ function buildSlackMarkdown(report) {
   const byDomain = groupByDomain(tests);
   const totals = summarizeTests(tests);
   const failures = tests.filter((test) => test.status === 'failed');
+  const moduleName = process.env.PLAYWRIGHT_MODULE_NAME?.trim() || 'Playwright API';
+  const environment = process.env.PLAYWRIGHT_ENVIRONMENT?.trim() || '';
 
   const lines = [];
-  lines.push(`*Playwright Test Run*`);
+  lines.push(`🧪 ${moduleName} Tests`);
+  if (environment) {
+    lines.push(`Environment: *${environment}*`);
+  }
   lines.push(
     `Total: *${totals.total}*  Passed: *${totals.passed}*  Failed: *${totals.failed}*  Flaky: *${totals.flaky}*  Skipped: *${totals.skipped}*`,
   );

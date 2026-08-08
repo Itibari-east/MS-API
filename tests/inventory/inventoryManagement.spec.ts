@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test';
 import test from '../../helpers/baseTests';
 
-test.describe('Inventory Management API', () => {
+test.describe('@inventory Inventory Management API', () => {
   test.describe('Warehouses', () => {
     test('creates, updates, fetches and deletes a warehouse', async ({ inventoryManagementFlows }) => {
       await inventoryManagementFlows.warehouseCrud();
