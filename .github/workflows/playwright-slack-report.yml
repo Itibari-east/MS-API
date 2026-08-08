@@ -1,0 +1,62 @@
+name: Playwright API Tests
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  test-and-report:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+      MS_USER_EMAIL: ${{ secrets.MS_USER_EMAIL || vars.MS_USER_EMAIL }}
+      MS_USER_PASSWORD: ${{ secrets.MS_USER_PASSWORD || vars.MS_USER_PASSWORD }}
+      MS_TOTP_SECRET: ${{ secrets.MS_TOTP_SECRET || vars.MS_TOTP_SECRET }}
+      MS_DEV_BASE_URL: ${{ secrets.MS_DEV_BASE_URL || vars.MS_DEV_BASE_URL }}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL || vars.SLACK_WEBHOOK_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check report configuration
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "::warning::SLACK_WEBHOOK_URL is not configured; Slack posting will be skipped."
+          fi
+          if [ -z "$MS_USER_EMAIL" ] || [ -z "$MS_USER_PASSWORD" ] || [ -z "$MS_TOTP_SECRET" ] || [ -z "$MS_DEV_BASE_URL" ]; then
+            echo "::warning::One or more test credentials are missing; the test run may fall back to existing auth state or fail setup."
+          fi
+
+      - name: Run Playwright API tests
+        id: tests
+        continue-on-error: true
+        run: npm run test:api
+
+      - name: Build and publish Slack report
+        if: always()
+        run: npm run report:slack -- test-results/playwright-report.json
+
+      - name: Upload Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            blob-report
+            test-results/playwright-report.json
+          if-no-files-found: warn
+
+      - name: Fail job when tests fail
+        if: steps.tests.outcome == 'failure'
+        run: exit 1

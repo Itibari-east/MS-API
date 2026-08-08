@@ -1,4 +1,5 @@
 import _config from '../config/config';
+import { joinUrl } from '../utils/url';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -39,7 +40,7 @@ export const _AuthRequests = {
     password: string,
     channel: Channel = 'WEB',
   ): { url: string; body: LoginBody } => ({
-    url: `${_config.baseEndpoint}/api/v1/login`,
+    url: joinUrl(_config.baseEndpoint, 'api/v1', 'login'),
     body: { username, password, channel },
   }),
 
@@ -49,7 +50,7 @@ export const _AuthRequests = {
    * No request body required.
    */
   mfaSetup: (): { url: string } => ({
-    url: `${_config.baseEndpoint}/api/v1/auth/mfa/setup`,
+    url: joinUrl(_config.baseEndpoint, 'api/v1', 'auth/mfa/setup'),
   }),
 
   /**
@@ -60,7 +61,7 @@ export const _AuthRequests = {
     secret: string,
     totpCode: string,
   ): { url: string; body: MfaSetupConfirmBody } => ({
-    url: `${_config.baseEndpoint}/api/v1/auth/mfa/setup/confirm`,
+    url: joinUrl(_config.baseEndpoint, 'api/v1', 'auth/mfa/setup/confirm'),
     body: { secret, totpCode },
   }),
 
@@ -69,7 +70,7 @@ export const _AuthRequests = {
    * Step 2 of the authenticator flow — submits the TOTP code to get the final token.
    */
   mfaVerify: (totpCode: string): { url: string; body: MfaVerifyBody } => ({
-    url: `${_config.baseEndpoint}/api/v1/auth/mfa/verify`,
+    url: joinUrl(_config.baseEndpoint, 'api/v1', 'auth/mfa/verify'),
     body: { totpCode },
   }),
 
@@ -78,7 +79,7 @@ export const _AuthRequests = {
    * Disables MFA for the current user.
    */
   mfaDisable: (): { url: string } => ({
-    url: `${_config.baseEndpoint}/api/v1/auth/mfa/disable`,
+    url: joinUrl(_config.baseEndpoint, 'api/v1', 'auth/mfa/disable'),
   }),
 
   /**
@@ -86,6 +87,6 @@ export const _AuthRequests = {
    * Triggers a password-reset email for the given username.
    */
   forgotPassword: (username: string): { url: string } => ({
-    url: `${_config.baseEndpoint}/api/v1/login/forgetPassword?username=${encodeURIComponent(username)}`,
+    url: `${joinUrl(_config.baseEndpoint, 'api/v1', 'login/forgetPassword')}?username=${encodeURIComponent(username)}`,
   }),
 };
