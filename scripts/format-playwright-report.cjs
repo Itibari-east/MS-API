@@ -28,6 +28,23 @@ function getGitHubRunUrl() {
   return `${serverUrl}/${repository}/actions/runs/${runId}`;
 }
 
+function getTodayLabel() {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Africa/Dar_es_Salaam',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+}
+
+function toModuleSlug(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/\bapi\b/g, '')
+    .replace(/[^a-z0-9]+/g, '')
+    .trim();
+}
+
 function toTitleCase(value) {
   return value
     .replace(/[_-]+/g, ' ')
@@ -62,6 +79,61 @@ function getDomainFromFile(fileName) {
   return 'Other';
 }
 
+function resolveCoverageNotePath() {
+  const explicitPath = process.env.PLAYWRIGHT_COVERAGE_NOTE_PATH?.trim();
+  if (explicitPath && fs.existsSync(explicitPath)) {
+    return explicitPath;
+  }
+
+  const moduleSlug = process.env.PLAYWRIGHT_MODULE_SLUG?.trim() || toModuleSlug(process.env.PLAYWRIGHT_MODULE_NAME);
+  if (!moduleSlug) {
+    return '';
+  }
+
+  const reportsDir = path.resolve(process.cwd(), 'reports');
+  if (!fs.existsSync(reportsDir)) {
+    return '';
+  }
+
+  const candidates = fs
+    .readdirSync(reportsDir)
+    .map((fileName) => {
+      const normalized = fileName.toLowerCase();
+      const exactMatch =
+        normalized.startsWith(`${moduleSlug}-coverage`) ||
+        normalized.startsWith(`${moduleSlug}-issues`);
+      const looseMatch =
+        normalized.includes(moduleSlug) &&
+        (normalized.includes('coverage') || normalized.includes('issues'));
+
+      return {
+        filePath: path.join(reportsDir, fileName),
+        score: exactMatch ? 2 : looseMatch ? 1 : 0,
+      };
+    })
+    .filter((candidate) => candidate.score > 0 && candidate.filePath.toLowerCase().endsWith('.md'))
+    .sort((left, right) => {
+      if (right.score !== left.score) {
+        return right.score - left.score;
+      }
+
+      const leftStat = fs.statSync(left.filePath);
+      const rightStat = fs.statSync(right.filePath);
+      return rightStat.mtimeMs - leftStat.mtimeMs;
+    })
+    .map((candidate) => candidate.filePath);
+
+  return candidates[0] || '';
+}
+
+function readTextFile(filePath) {
+  if (!filePath || !fs.existsSync(filePath)) {
+    return '';
+  }
+
+  return fs.readFileSync(filePath, 'utf8').trim();
+}
+
 function flattenTests(suites, bucket = []) {
   for (const suite of suites || []) {
     if (Array.isArray(suite.suites) && suite.suites.length) {
@@ -85,129 +157,6 @@ function flattenTests(suites, bucket = []) {
   return bucket;
 }
 
-function getFailedResult(test) {
-  const results = test.results || [];
-  const failedResults = results.filter((result) => result.status === 'failed' || result.status === 'timedOut');
-  return failedResults[failedResults.length - 1] || results[results.length - 1] || {};
-}
-
-function readStdIOEntry(entry) {
-  if (!entry) {
-    return '';
-  }
-
-  if (typeof entry.text === 'string') {
-    return entry.text;
-  }
-
-  if (typeof entry.buffer === 'string') {
-    return Buffer.from(entry.buffer, 'base64').toString('utf8');
-  }
-
-  return '';
-}
-
-function normalizeTextBlock(value) {
-  return stripAnsi(value)
-    .replace(/\r\n/g, '\n')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
-}
-
-function truncateText(value, maxLength = 1200) {
-  const text = normalizeTextBlock(value);
-  if (text.length <= maxLength) {
-    return text;
-  }
-
-  return `${text.slice(0, maxLength).trimEnd()}\n... [truncated ${text.length - maxLength} characters]`;
-}
-
-function quotedBlock(label, value, maxLength = 1200) {
-  const text = truncateText(value, maxLength);
-  if (!text) {
-    return '';
-  }
-
-  const quotedLines = text
-    .split('\n')
-    .map((line) => `> ${line}`)
-    .join('\n');
-
-  return `*${label}:*\n${quotedLines}`;
-}
-
-function formatAttachments(attachments = []) {
-  if (!attachments.length) {
-    return '';
-  }
-
-  const lines = attachments.map((attachment) => {
-    const fileName = attachment.path ? path.basename(attachment.path) : '';
-    const name = attachment.name || 'attachment';
-    const suffix = fileName && fileName !== name ? ` (${fileName})` : '';
-    return `- ${name}${suffix}${attachment.contentType ? ` [${attachment.contentType}]` : ''}`;
-  });
-
-  return [`*Attachments:*`, ...lines].join('\n');
-}
-
-function formatStream(title, entries) {
-  const content = entries.map(readStdIOEntry).filter(Boolean).join('\n');
-  if (!content.trim()) {
-    return '';
-  }
-
-  return quotedBlock(title, content, 1000);
-}
-
-function formatFailureDetails(test) {
-  const failedResult = getFailedResult(test);
-  const errorParts = [];
-  const githubRunUrl = getGitHubRunUrl();
-
-  if (failedResult.error?.message) {
-    errorParts.push(failedResult.error.message);
-  }
-
-  if (failedResult.error?.stack && failedResult.error.stack !== failedResult.error.message) {
-    errorParts.push(failedResult.error.stack);
-  }
-
-  for (const additionalError of failedResult.errors || []) {
-    if (additionalError?.message) {
-      errorParts.push(additionalError.message);
-    }
-  }
-
-  const sections = [];
-  const errorSection = quotedBlock('Error', errorParts.join('\n\n') || 'No failure message available', 1600);
-  if (errorSection) {
-    sections.push(errorSection);
-  }
-
-  const stdoutSection = formatStream('Stdout', failedResult.stdout || []);
-  if (stdoutSection) {
-    sections.push(stdoutSection);
-  }
-
-  const stderrSection = formatStream('Stderr', failedResult.stderr || []);
-  if (stderrSection) {
-    sections.push(stderrSection);
-  }
-
-  const attachmentSection = formatAttachments(failedResult.attachments || []);
-  if (attachmentSection) {
-    sections.push(attachmentSection);
-  }
-
-  if (githubRunUrl) {
-    sections.push(`*GitHub run:*\n<${githubRunUrl}|View GitHub run>`);
-  }
-
-  return sections.join('\n');
-}
-
 function normalizeResult(test) {
   const results = test.results || [];
   const lastResult = results[results.length - 1] || {};
@@ -228,7 +177,6 @@ function normalizeResult(test) {
     ...test,
     status,
     failure: errorText,
-    failureResult: getFailedResult(test),
     domain: getDomainFromFile(test.file),
   };
 }
@@ -257,12 +205,7 @@ function summarizeTests(tests) {
 
 function formatFailure(test) {
   const location = test.file ? ` (${path.relative(process.cwd(), test.file)}:${test.line || 1})` : '';
-  const failedResult = test.failureResult || {};
-  const retryText = typeof failedResult.retry === 'number' ? `  Retry: ${failedResult.retry + 1}` : '';
-  const durationText = typeof failedResult.duration === 'number' ? `  Duration: ${failedResult.duration}ms` : '';
-  const details = formatFailureDetails({ ...test, failureResult: failedResult });
-
-  return [`- ${test.title}${location}${retryText}${durationText}`, details ? details : '  No failure details available'].join('\n');
+  return `- ${test.title}${location}`;
 }
 
 function buildSlackMarkdown(report) {
@@ -273,9 +216,12 @@ function buildSlackMarkdown(report) {
   const moduleName = process.env.PLAYWRIGHT_MODULE_NAME?.trim() || 'Playwright API';
   const environment = process.env.PLAYWRIGHT_ENVIRONMENT?.trim() || '';
   const githubRunUrl = getGitHubRunUrl();
+  const coverageNotePath = resolveCoverageNotePath();
+  const coverageNote = readTextFile(coverageNotePath);
 
   const lines = [];
-  lines.push(`🧪 ${moduleName} Tests`);
+  lines.push(`🧪 ${moduleName} Coverage Report`);
+  lines.push(`Date: ${getTodayLabel()}`);
   if (environment) {
     lines.push(`Environment: *${environment}*`);
   }
@@ -283,36 +229,61 @@ function buildSlackMarkdown(report) {
     lines.push(`Build: <${githubRunUrl}|View GitHub run>`);
   }
   lines.push(
-    `Total: *${totals.total}*  Passed: *${totals.passed}*  Failed: *${totals.failed}*  Flaky: *${totals.flaky}*  Skipped: *${totals.skipped}*`,
+    `✅ *${totals.passed}*  ❌ *${totals.failed}*  ⏩ *${totals.skipped}*  🟡 *${totals.flaky}*  Total: *${totals.total}*`,
   );
   lines.push('');
 
+  if (coverageNote) {
+    lines.push(coverageNote);
+    lines.push('');
+  } else {
+    lines.push('## Covered');
+    const coveredTests = tests.filter((test) => test.status === 'passed');
+    if (coveredTests.length) {
+      for (const test of coveredTests) {
+        lines.push(formatFailure(test).replace(/^-\s*/, '- '));
+      }
+    } else {
+      lines.push('- None');
+    }
+
+    lines.push('');
+    lines.push('## Expected Failures');
+    const expectedFailures = tests.filter((test) => test.expectedStatus === 'failed');
+    if (expectedFailures.length) {
+      for (const test of expectedFailures) {
+        lines.push(formatFailure(test));
+      }
+    } else {
+      lines.push('- None');
+    }
+
+    lines.push('');
+    lines.push('## Missing Coverage');
+    lines.push('- See the module coverage note for the planned scenarios still not automated.');
+    lines.push('');
+  }
+
+  lines.push('## Current Run');
   for (const domain of Object.keys(byDomain).sort()) {
     const domainTests = byDomain[domain];
     const summary = summarizeTests(domainTests);
     lines.push(`*${domain}*`);
-    lines.push(
-      `Total: *${summary.total}*  Passed: *${summary.passed}*  Failed: *${summary.failed}*  Flaky: *${summary.flaky}*  Skipped: *${summary.skipped}*`,
-    );
+    lines.push(`✅ *${summary.passed}*  ❌ *${summary.failed}*  ⏩ *${summary.skipped}*  🟡 *${summary.flaky}*`);
 
     const domainFailures = domainTests.filter((test) => test.status === 'failed');
     if (domainFailures.length) {
-      lines.push('Failed tests:');
+      lines.push('Failed endpoints:');
       for (const failure of domainFailures) {
         lines.push(formatFailure(failure));
       }
-    } else {
-      lines.push('Failed tests: none');
     }
 
     lines.push('');
   }
 
-  if (failures.length) {
-    lines.push('*Overall failures*');
-    for (const failure of failures) {
-      lines.push(formatFailure(failure));
-    }
+  if (githubRunUrl) {
+    lines.push(`Logs: <${githubRunUrl}|View GitHub run>`);
   }
 
   return lines.join('\n').trim();
