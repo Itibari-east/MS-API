@@ -11,7 +11,7 @@ on:
         description: Target Env
         type: choice
         options: [PRODUCTION, DEV]
-        default: PRODUCTION
+        default: DEV
 
 jobs:
   run-playwright-tests:
@@ -24,7 +24,7 @@ jobs:
       tag: "@commercials"
       moduleName: "Commercials API"
       moduleSlug: commercials
-      environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'PRODUCTION' }}
+      environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'DEV' }}
       shardIndex: ${{ matrix.shardIndex }}
       shardTotal: 4
       node-version: 20
@@ -43,7 +43,7 @@ jobs:
     env:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       PLAYWRIGHT_MODULE_NAME: Commercials API
-      PLAYWRIGHT_ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'PRODUCTION' }}
+      PLAYWRIGHT_ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'DEV' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

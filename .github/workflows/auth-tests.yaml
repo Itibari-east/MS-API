@@ -11,7 +11,7 @@ on:
         description: Target Env
         type: choice
         options: [PRODUCTION, DEV]
-        default: PRODUCTION
+        default: DEV
 
 jobs:
   run-playwright-tests:
@@ -20,7 +20,7 @@ jobs:
       tag: "@auth"
       moduleName: "Auth API"
       moduleSlug: auth
-      environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'PRODUCTION' }}
+      environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'DEV' }}
       shardIndex: 1
       shardTotal: 1
       node-version: 20
@@ -39,7 +39,7 @@ jobs:
     env:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       PLAYWRIGHT_MODULE_NAME: Auth API
-      PLAYWRIGHT_ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'PRODUCTION' }}
+      PLAYWRIGHT_ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'DEV' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
