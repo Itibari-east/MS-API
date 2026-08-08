@@ -19,6 +19,7 @@ jobs:
     with:
       tag: "@auth"
       moduleName: "Auth API"
+      moduleSlug: auth
       environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'PRODUCTION' }}
       shardIndex: 1
       shardTotal: 1
@@ -40,13 +41,23 @@ jobs:
       PLAYWRIGHT_MODULE_NAME: Auth API
       PLAYWRIGHT_ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'PRODUCTION' }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Download shard artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: blob-report-Auth API-*
+          pattern: blob-report-auth-*
           path: all-blob-reports
           merge-multiple: true
           if-no-files-found: warn
+
+      - name: Verify Slack webhook
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "::error::SLACK_WEBHOOK_URL is not available in this job"
+            exit 1
+          fi
 
       - name: Setup Node
         uses: actions/setup-node@v4
