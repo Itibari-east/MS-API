@@ -220,7 +220,10 @@ test.describe.serial('Commercials Service - Package Units', () => {
   test('rejects duplicate package unit codes', async ({ commercialsService, packageUnitApi }) => {
     const token = getTokenOrSkip();
     const baseUom = await createBaseUom(commercialsService, token, 'Package Duplicate Base UOM');
-    const code = 'PKGQA01';
+    const code = `PKG${Date.now().toString().slice(-6)}${Math.random().toString(36).slice(2, 4).toUpperCase()}`.slice(
+      0,
+      10,
+    );
 
     const first = await createPackageUnit(packageUnitApi, token, {
       baseUom,
@@ -230,10 +233,12 @@ test.describe.serial('Commercials Service - Package Units', () => {
     });
 
     await expect(
-      createPackageUnit(packageUnitApi, token, {
-        baseUom,
+      packageUnitApi.createPackageUnit(token, {
+        name: unique('Package Unit'),
         code,
+        baseUomPublicId: baseUom.publicId,
         conversionFactor: 24,
+        description: `Automation duplicate ${code}`,
         status: serviceConstants.commercials.packageUnit.status.active,
       }),
     ).rejects.toThrow(/409|already exists|duplicate|code/i);
