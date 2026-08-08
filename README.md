@@ -23,3 +23,19 @@ npm run test:api:headed-report
 ```
 
 Set `ENVIRONMENT=DEV` or `ENVIRONMENT=PRODUCTION` to switch configuration.
+
+## Slack reporting
+
+Pushes to git trigger the Playwright GitHub Actions workflow in
+`.github/workflows/playwright-slack-report.yml`.
+
+Required secrets:
+
+- `MS_USER_EMAIL`
+- `MS_USER_PASSWORD`
+- `MS_TOTP_SECRET`
+- `MS_DEV_BASE_URL`
+- `SLACK_WEBHOOK_URL`
+
+The workflow writes a JSON Playwright report, formats it into a Slack summary
+grouped by domain, and includes failed tests per domain in the message body.
