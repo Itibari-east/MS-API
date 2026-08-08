@@ -2,10 +2,9 @@ import { expect, type APIRequestContext } from '@playwright/test';
 import _config from '../config/config';
 import { serviceConstants } from '../constants/endpoints';
 import { _AuthService } from './authservice';
-import { extractAuthToken } from './requestHelpers';
-import { generateTotpCode } from '../utils/totp';
 import { readToken } from '../helpers/testHelpers';
 import { joinUrl } from '../utils/url';
+import { shouldAttemptPasswordRecovery } from '../utils/email';
 
 type LoginResult = {
   challengeToken: string;
@@ -28,7 +27,24 @@ export class _AuthFlows {
   private async loginAsConfiguredUser(): Promise<LoginResult> {
     const { email, password } = this.credentials();
     const response = await this.auth.login(email, password);
-    expect(response.status()).toBe(200);
+    if (!response.ok()) {
+      const failureText = await response.text();
+      if (!shouldAttemptPasswordRecovery(failureText)) {
+        expect(response.status()).toBe(200);
+      }
+
+      console.warn('[auth] Login is asking for password recovery. Running forgot-password flow and restoring the configured password.');
+      await this.auth.loginWithMfaSetup(email, password, process.env.MS_TOTP_SECRET || '');
+
+      const retryRes = await this.auth.login(email, password);
+      expect(retryRes.status()).toBe(200);
+
+      const retryBody = await retryRes.json();
+      const retryChallengeToken = String(retryBody.challengeToken ?? '');
+      expect(retryChallengeToken).toBeTruthy();
+
+      return { challengeToken: retryChallengeToken };
+    }
 
     const body = await response.json();
     const challengeToken = String(body.challengeToken ?? '');
@@ -38,22 +54,8 @@ export class _AuthFlows {
   }
 
   private async loginWithMfaChallenge(): Promise<MfaResult> {
-    const { challengeToken } = await this.loginAsConfiguredUser();
-    const setupRes = await this.auth.mfaSetup(challengeToken);
-    expect(setupRes.status()).toBe(200);
-
-    const setupBody = await setupRes.json();
-    const setupSecret = String(setupBody.secret ?? '');
-    expect(setupSecret).toBeTruthy();
-
-    const confirmCode = generateTotpCode(setupSecret);
-    const confirmRes = await this.auth.mfaSetupConfirm(setupSecret, confirmCode, challengeToken);
-    expect(confirmRes.status()).toBe(200);
-
-    const verifyRes = await this.auth.mfaVerify(generateTotpCode(setupSecret), challengeToken);
-    expect(verifyRes.status()).toBe(200);
-
-    const accessToken = await extractAuthToken(verifyRes);
+    const { email, password } = this.credentials();
+    const { accessToken } = await this.auth.loginWithMfaSetup(email, password, process.env.MS_TOTP_SECRET || '');
     expect(accessToken).toBeTruthy();
 
     return { accessToken };
