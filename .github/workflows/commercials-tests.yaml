@@ -23,6 +23,7 @@ jobs:
     with:
       tag: "@commercials"
       moduleName: "Commercials API"
+      moduleSlug: commercials
       environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'PRODUCTION' }}
       shardIndex: ${{ matrix.shardIndex }}
       shardTotal: 4
@@ -44,13 +45,23 @@ jobs:
       PLAYWRIGHT_MODULE_NAME: Commercials API
       PLAYWRIGHT_ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'PRODUCTION' }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Download shard artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: blob-report-Commercials API-*
+          pattern: blob-report-commercials-*
           path: all-blob-reports
           merge-multiple: true
           if-no-files-found: warn
+
+      - name: Verify Slack webhook
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "::error::SLACK_WEBHOOK_URL is not available in this job"
+            exit 1
+          fi
 
       - name: Setup Node
         uses: actions/setup-node@v4
