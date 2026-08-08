@@ -1,4 +1,4 @@
-import { APIResponse } from '@playwright/test';
+import { APIResponse, request } from '@playwright/test';
 import { _SupplierRequests } from '../requests/supplier';
 import { common } from '../utils/common';
 import { authHeaders, withQueryParams } from './requestHelpers';
@@ -10,6 +10,7 @@ import {
   SupplierContactPayload,
   SupplierDeactivatePayload,
   SupplierDocumentMetadataPayload,
+  SupplierDocumentUploadPayload,
   SupplierDraftPayload,
   SupplierId,
   SupplierListParams,
@@ -20,6 +21,16 @@ import {
   SupplierActivityParams,
   SupplierActivityResponse,
   SupplierBulkDeactivatePayload,
+  SupplierProductListParams,
+  SupplierProductListResponse,
+  SupplierDocumentListParams,
+  SupplierDocumentListResponse,
+  SupplierDocumentExportParams,
+  SupplierRebateListParams,
+  SupplierRebateListResponse,
+  SupplierPerformanceDeliveryParams,
+  SupplierPerformanceDeliveryResponse,
+  SupplierSummaryResponse,
 } from '../types/supplier';
 
 type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
@@ -112,6 +123,22 @@ export class SupplierApi {
     }
   }
 
+  private async sendMultipart(
+    url: string,
+    token: string,
+    multipart: Record<string, string | number | boolean | { name: string; mimeType: string; buffer: Buffer }>,
+  ): Promise<APIResponse> {
+    const apiRequestContext = await request.newContext();
+    try {
+      return await apiRequestContext.post(url, {
+        headers: acceptHeaders(token),
+        multipart,
+      });
+    } finally {
+      await apiRequestContext.dispose().catch(() => undefined);
+    }
+  }
+
   private async execute<T>(
     method: HttpMethod,
     operation: string,
@@ -138,6 +165,30 @@ export class SupplierApi {
       raw,
       headers: response.headers(),
     };
+  }
+
+  private async executeRaw(
+    method: HttpMethod,
+    operation: string,
+    url: string,
+    token: string,
+    body: unknown,
+    allowedStatuses: number[],
+    multipart?: Record<string, string | number | boolean | { name: string; mimeType: string; buffer: Buffer }>,
+  ): Promise<APIResponse> {
+    console.log(`[SupplierApi] -> ${operation} ${method} ${url}${body !== undefined ? ` ${prettyBody(body)}` : ''}`);
+
+    const response = multipart ? await this.sendMultipart(url, token, multipart) : await this.send(method, url, token, body);
+    const status = response.status();
+    const raw = await response.text();
+
+    console.log(`[SupplierApi] <- ${operation} ${status} ${responsePreview(raw)}`);
+
+    if (!allowedStatuses.includes(status)) {
+      throw new SupplierApiError(operation, method, url, status, raw);
+    }
+
+    return response;
   }
 
   listSuppliers(
@@ -337,7 +388,7 @@ export class SupplierApi {
     return this.execute<SupplierRecord>(
       'POST',
       'upsertDocumentMetadata',
-      _SupplierRequests.suppliers.documents(publicId),
+      _SupplierRequests.suppliers.documents.upload(publicId),
       token,
       payload,
       [200, 201],
@@ -351,6 +402,175 @@ export class SupplierApi {
   ): Promise<SupplierApiResult<SupplierActivityResponse>> {
     const url = withQueryParams(_SupplierRequests.suppliers.activities(publicId), params);
     return this.execute<SupplierActivityResponse>('GET', 'listActivity', url, token, undefined, [200]);
+  }
+
+  listProducts(
+    token: string,
+    publicId: SupplierId,
+    params?: SupplierProductListParams,
+  ): Promise<SupplierApiResult<SupplierProductListResponse>> {
+    const url = withQueryParams(_SupplierRequests.suppliers.products.list(publicId), params);
+    return this.execute<SupplierProductListResponse>('GET', 'listProducts', url, token, undefined, [200]);
+  }
+
+  getProductSummary(token: string, publicId: SupplierId): Promise<SupplierApiResult<SupplierSummaryResponse>> {
+    return this.execute<SupplierSummaryResponse>(
+      'GET',
+      'getProductSummary',
+      _SupplierRequests.suppliers.products.summary(publicId),
+      token,
+      undefined,
+      [200],
+    );
+  }
+
+  listDocuments(
+    token: string,
+    publicId: SupplierId,
+    params?: SupplierDocumentListParams,
+  ): Promise<SupplierApiResult<SupplierDocumentListResponse>> {
+    const url = withQueryParams(_SupplierRequests.suppliers.documents.list(publicId), params);
+    return this.execute<SupplierDocumentListResponse>('GET', 'listDocuments', url, token, undefined, [200]);
+  }
+
+  uploadDocument(
+    token: string,
+    publicId: SupplierId,
+    payload: SupplierDocumentUploadPayload,
+  ): Promise<SupplierApiResult<SupplierRecord>> {
+    const multipart: Record<string, string | number | boolean | { name: string; mimeType: string; buffer: Buffer }> = {
+      documentTypeCode: payload.documentTypeCode,
+      fileName: payload.fileName,
+      storageKey: payload.storageKey,
+      contentType: payload.contentType,
+      file: payload.file,
+    };
+
+    if (payload.expiryDate) {
+      multipart.expiryDate = payload.expiryDate;
+    }
+
+    const url = _SupplierRequests.suppliers.documents.upload(publicId);
+    return (async () => {
+      console.log(`[SupplierApi] -> uploadDocument POST ${url} ${prettyBody(payload)}`);
+      const apiRequestContext = await request.newContext();
+      try {
+        const response = await apiRequestContext.post(url, {
+          headers: acceptHeaders(token),
+          multipart,
+        });
+        const status = response.status();
+        const raw = await response.text();
+        console.log(`[SupplierApi] <- uploadDocument ${status} ${responsePreview(raw)}`);
+        if (![200, 201].includes(status)) {
+          throw new SupplierApiError('uploadDocument', 'POST', url, status, raw);
+        }
+        return {
+          status,
+          data: parseJson<SupplierRecord>(raw, 'uploadDocument'),
+          raw,
+          headers: response.headers(),
+        };
+      } finally {
+        await apiRequestContext.dispose().catch(() => undefined);
+      }
+    })();
+  }
+
+  sendDocumentRenewalReminder(
+    token: string,
+    publicId: SupplierId,
+    documentPublicId: string,
+  ): Promise<APIResponse> {
+    return this.executeRaw(
+      'POST',
+      'sendDocumentRenewalReminder',
+      _SupplierRequests.suppliers.documents.renewalReminder(publicId, documentPublicId),
+      token,
+      undefined,
+      [200, 204],
+    );
+  }
+
+  viewDocument(token: string, publicId: SupplierId, documentPublicId: string): Promise<APIResponse> {
+    return this.executeRaw(
+      'GET',
+      'viewDocument',
+      _SupplierRequests.suppliers.documents.view(publicId, documentPublicId),
+      token,
+      undefined,
+      [200],
+    );
+  }
+
+  downloadDocument(token: string, publicId: SupplierId, documentPublicId: string): Promise<APIResponse> {
+    return this.executeRaw(
+      'GET',
+      'downloadDocument',
+      _SupplierRequests.suppliers.documents.download(publicId, documentPublicId),
+      token,
+      undefined,
+      [200],
+    );
+  }
+
+  exportDocuments(
+    token: string,
+    publicId: SupplierId,
+    params?: SupplierDocumentExportParams,
+  ): Promise<APIResponse> {
+    const url = withQueryParams(_SupplierRequests.suppliers.documents.export(publicId), params);
+    return this.executeRaw('GET', 'exportDocuments', url, token, undefined, [200]);
+  }
+
+  listRebates(
+    token: string,
+    publicId: SupplierId,
+    params?: SupplierRebateListParams,
+  ): Promise<SupplierApiResult<SupplierRebateListResponse>> {
+    const url = withQueryParams(_SupplierRequests.suppliers.rebates.list(publicId), params);
+    return this.execute<SupplierRebateListResponse>('GET', 'listRebates', url, token, undefined, [200]);
+  }
+
+  getRebatesSummary(token: string, publicId: SupplierId): Promise<SupplierApiResult<SupplierSummaryResponse>> {
+    return this.execute<SupplierSummaryResponse>(
+      'GET',
+      'getRebatesSummary',
+      _SupplierRequests.suppliers.rebates.summary(publicId),
+      token,
+      undefined,
+      [200],
+    );
+  }
+
+  getPerformanceSummary(
+    token: string,
+    publicId: SupplierId,
+  ): Promise<SupplierApiResult<SupplierSummaryResponse>> {
+    return this.execute<SupplierSummaryResponse>(
+      'GET',
+      'getPerformanceSummary',
+      _SupplierRequests.suppliers.performance.summary(publicId),
+      token,
+      undefined,
+      [200],
+    );
+  }
+
+  listPerformanceDeliveries(
+    token: string,
+    publicId: SupplierId,
+    params?: SupplierPerformanceDeliveryParams,
+  ): Promise<SupplierApiResult<SupplierPerformanceDeliveryResponse>> {
+    const url = withQueryParams(_SupplierRequests.suppliers.performance.deliveries(publicId), params);
+    return this.execute<SupplierPerformanceDeliveryResponse>(
+      'GET',
+      'listPerformanceDeliveries',
+      url,
+      token,
+      undefined,
+      [200],
+    );
   }
 }
 
