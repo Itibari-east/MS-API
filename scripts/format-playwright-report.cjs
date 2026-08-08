@@ -378,6 +378,11 @@ function summarizeTests(tests) {
   );
 }
 
+function formatWorkflowSummaryLine(domain, summary) {
+  const icon = summary.failed > 0 ? '❌' : '✅';
+  return `${icon} ${domain} — ${summary.passed}/${summary.total} passed, ${summary.failed} failed, ${summary.skipped} skipped`;
+}
+
 function buildSlackMarkdown(report) {
   const tests = flattenTests(report.suites || []).map(normalizeResult);
   const byDomain = groupByDomain(tests);
@@ -406,13 +411,10 @@ function buildSlackMarkdown(report) {
   );
   lines.push('');
 
-  lines.push('*Per-workflow:*');
+  lines.push('*All runs:*');
   for (const domain of Object.keys(byDomain).sort()) {
     const summary = summarizeTests(byDomain[domain]);
-    const icon = summary.failed > 0 ? '❌' : '✅';
-    lines.push(
-      `${icon} ${domain} — ${summary.passed}/${summary.total} passed, ${summary.failed} failed, ${summary.skipped} skipped`,
-    );
+    lines.push(formatWorkflowSummaryLine(domain, summary));
   }
   lines.push('');
 
