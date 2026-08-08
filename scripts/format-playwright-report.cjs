@@ -16,6 +16,18 @@ function stripAnsi(value) {
   );
 }
 
+function getGitHubRunUrl() {
+  const repository = process.env.GITHUB_REPOSITORY?.trim();
+  const runId = process.env.GITHUB_RUN_ID?.trim();
+  const serverUrl = process.env.GITHUB_SERVER_URL?.trim() || 'https://github.com';
+
+  if (!repository || !runId) {
+    return '';
+  }
+
+  return `${serverUrl}/${repository}/actions/runs/${runId}`;
+}
+
 function toTitleCase(value) {
   return value
     .replace(/[_-]+/g, ' ')
@@ -147,6 +159,7 @@ function formatStream(title, entries) {
 function formatFailureDetails(test) {
   const failedResult = getFailedResult(test);
   const errorParts = [];
+  const githubRunUrl = getGitHubRunUrl();
 
   if (failedResult.error?.message) {
     errorParts.push(failedResult.error.message);
@@ -181,6 +194,10 @@ function formatFailureDetails(test) {
   const attachmentSection = formatAttachments(failedResult.attachments || []);
   if (attachmentSection) {
     sections.push(attachmentSection);
+  }
+
+  if (githubRunUrl) {
+    sections.push(`*GitHub run:*\n<${githubRunUrl}|View GitHub run>`);
   }
 
   return sections.join('\n');
@@ -250,11 +267,15 @@ function buildSlackMarkdown(report) {
   const failures = tests.filter((test) => test.status === 'failed');
   const moduleName = process.env.PLAYWRIGHT_MODULE_NAME?.trim() || 'Playwright API';
   const environment = process.env.PLAYWRIGHT_ENVIRONMENT?.trim() || '';
+  const githubRunUrl = getGitHubRunUrl();
 
   const lines = [];
   lines.push(`🧪 ${moduleName} Tests`);
   if (environment) {
     lines.push(`Environment: *${environment}*`);
+  }
+  if (githubRunUrl) {
+    lines.push(`Build: <${githubRunUrl}|View GitHub run>`);
   }
   lines.push(
     `Total: *${totals.total}*  Passed: *${totals.passed}*  Failed: *${totals.failed}*  Flaky: *${totals.flaky}*  Skipped: *${totals.skipped}*`,
