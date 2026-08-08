@@ -13,6 +13,7 @@ import { _CommercialsService } from '../services/commercials';
 import { CategoryApi } from '../services/category';
 import { ClassApi } from '../services/class';
 import { SubClassApi } from '../services/subclass';
+import { PackageUnitApi } from '../services/packageUnit';
 import { closeDatabase } from '../utils/database';
 
 const test = baseTest.extend<{
@@ -30,6 +31,7 @@ const test = baseTest.extend<{
   categoryApi: CategoryApi;
   classApi: ClassApi;
   subClassApi: SubClassApi;
+  packageUnitApi: PackageUnitApi;
 }>({
   common: async ({}, use) => {
     await use(new _common());
@@ -72,6 +74,9 @@ const test = baseTest.extend<{
   },
   subClassApi: async ({}, use) => {
     await use(new SubClassApi());
+  },
+  packageUnitApi: async ({}, use) => {
+    await use(new PackageUnitApi());
   },
 });
 
