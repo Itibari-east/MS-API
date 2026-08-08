@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { DEV_BASE_URL, SERVICE_ENDPOINTS } from './dev';
 import { _prod } from './prod';
 import { _users } from './users';
+import { joinUrl, normalizeBaseUrl } from '../utils/url';
 
 interface Config {
   baseEndpoint: string;
@@ -37,13 +38,14 @@ if (ENV.toUpperCase() === DEV) {
     password: _users.common.password,
   };
   } else if (ENV.toUpperCase() === PROD) {
-    _config = {
-      baseEndpoint: _prod.common.BASE_URL,
+  const prodBaseUrl = normalizeBaseUrl(_prod.common.BASE_URL);
+  _config = {
+      baseEndpoint: prodBaseUrl,
       serviceEndpoints: {
-        userManagement: `${_prod.common.BASE_URL}/user-management-service`,
-        inventoryManagement: `${_prod.common.BASE_URL}/inventory-management-service`,
-        accountingService: `${_prod.common.BASE_URL}/accounting-service`,
-        commercials: `${_prod.common.BASE_URL}/commercials-service`,
+        userManagement: joinUrl(prodBaseUrl, 'user-management-service'),
+        inventoryManagement: joinUrl(prodBaseUrl, 'inventory-management-service'),
+        accountingService: joinUrl(prodBaseUrl, 'accounting-service'),
+        commercials: joinUrl(prodBaseUrl, 'commercials-service'),
       },
       email: process.env.MS_USER_EMAIL || 'd.chirchir@itibari.io',
       password: process.env.MS_USER_PASSWORD || 'Silot777@',
