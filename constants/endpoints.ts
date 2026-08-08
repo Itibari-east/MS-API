@@ -34,6 +34,12 @@ export const serviceConstants = {
       },
       allowedTypes: ['Weight', 'Volume', 'Count', 'Length', 'Area', 'Other'],
     },
+    packageUnit: {
+      status: {
+        active: 'ACTIVE',
+        inactive: 'INACTIVE',
+      },
+    },
     category: {
       status: {
         active: 'ACTIVE',
