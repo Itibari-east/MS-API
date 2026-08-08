@@ -9,11 +9,22 @@ import { createGuardrails, generateSync } from 'otplib';
  * Usage:
  *   const code = generateTotpCode(process.env.MS_TOTP_SECRET!);
  */
-export function generateTotpCode(secret: string): string {
+export function generateTotpCode(secret: string, epoch = Date.now()): string {
   return generateSync({
     secret,
+    epoch,
     guardrails: createGuardrails({ MIN_SECRET_BYTES: 10 }),
   });
+}
+
+export function generateTotpCandidates(secret: string): string[] {
+  const now = Date.now();
+  const step = 30_000;
+  return [
+    generateTotpCode(secret, now - step),
+    generateTotpCode(secret, now),
+    generateTotpCode(secret, now + step),
+  ];
 }
 
 /**

@@ -63,10 +63,19 @@ async function globalSetup(): Promise<void> {
     _config.password,
     totpSecret,
   );
+  const accessToken = String(body.accessToken ?? body.token ?? '').trim();
+
+  if (!accessToken) {
+    throw new Error('[globalSetup] MFA login completed but no access token was returned.');
+  }
+
+  if (isJwtExpired(accessToken, 5_000)) {
+    throw new Error('[globalSetup] MFA login returned an expired or malformed access token.');
+  }
 
   const authData = {
     default: {
-      token: String(body.accessToken ?? body.token ?? ''),
+      token: accessToken,
       username: body.username ?? _config.email,
     },
   };
