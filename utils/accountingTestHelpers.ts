@@ -7,6 +7,7 @@ export type CreatedEntity = {
   name: string;
   code: string;
   publicId: string;
+  swiftCode?: string;
 };
 
 export async function expectStatuses<T extends { status(): number }>(
@@ -89,13 +90,14 @@ export async function createBank(
 ): Promise<CreatedEntity> {
   const name = `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
   const code = bankCode();
+  const swift = swiftCode();
   // Bank creation is a plain JSON request; there is no document upload in this flow.
   const response = await expectStatuses(
     accounting.createBank(token, {
       name,
       code,
       country: accountingConstants.bank.country,
-      swiftCode: swiftCode(),
+      swiftCode: swift,
       status: accountingConstants.bank.status.active,
     }),
     [201],
@@ -105,7 +107,7 @@ export async function createBank(
   const bodyPublicId = Array.isArray(body) ? body[0]?.publicId : body?.publicId;
   const publicId = bodyPublicId || (await resolveBankPublicId(accounting, token, code, name));
 
-  return { name, code, publicId };
+  return { name, code, publicId, swiftCode: swift };
 }
 
 export async function createBranch(
