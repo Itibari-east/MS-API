@@ -23,6 +23,7 @@ jobs:
     with:
       tag: "@supplier"
       moduleName: "Supplier API"
+      moduleSlug: supplier
       environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'PRODUCTION' }}
       shardIndex: ${{ matrix.shardIndex }}
       shardTotal: 2
@@ -50,7 +51,7 @@ jobs:
       - name: Download shard artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: blob-report-Supplier API-*
+          pattern: blob-report-supplier-*
           path: all-blob-reports
           merge-multiple: true
           if-no-files-found: warn

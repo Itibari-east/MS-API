@@ -23,6 +23,7 @@ jobs:
     with:
       tag: "@usermanagement"
       moduleName: "User Management API"
+      moduleSlug: usermanagement
       environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'PRODUCTION' }}
       shardIndex: ${{ matrix.shardIndex }}
       shardTotal: 2
@@ -50,7 +51,7 @@ jobs:
       - name: Download shard artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: blob-report-User Management API-*
+          pattern: blob-report-usermanagement-*
           path: all-blob-reports
           merge-multiple: true
           if-no-files-found: warn
