@@ -26,6 +26,43 @@ export interface SupplierActivityRecord {
   [key: string]: unknown;
 }
 
+export interface SupplierProductRecord {
+  publicId?: string;
+  productPublicId?: string;
+  name?: string;
+  status?: string;
+  linkedAt?: string;
+  category?: string;
+  [key: string]: unknown;
+}
+
+export interface SupplierDocumentRecord {
+  publicId?: string;
+  documentTypeCode?: string;
+  type?: string;
+  fileName?: string;
+  storageKey?: string;
+  status?: string;
+  [key: string]: unknown;
+}
+
+export interface SupplierRebateRecord {
+  publicId?: string;
+  rebatePublicId?: string;
+  period?: string;
+  status?: string;
+  amount?: number;
+  currencyCode?: string;
+  [key: string]: unknown;
+}
+
+export interface SupplierPerformanceRecord {
+  publicId?: string;
+  orderDate?: string;
+  status?: string;
+  [key: string]: unknown;
+}
+
 export interface PaginatedResponse<T> {
   content?: T[];
   totalElements?: number;
@@ -41,6 +78,11 @@ export interface PaginatedResponse<T> {
 
 export type SupplierListResponse = PaginatedResponse<SupplierRecord>;
 export type SupplierActivityResponse = PaginatedResponse<SupplierActivityRecord>;
+export type SupplierProductListResponse = PaginatedResponse<SupplierProductRecord>;
+export type SupplierDocumentListResponse = PaginatedResponse<SupplierDocumentRecord>;
+export type SupplierRebateListResponse = PaginatedResponse<SupplierRebateRecord>;
+export type SupplierPerformanceDeliveryResponse = PaginatedResponse<SupplierPerformanceRecord>;
+export type SupplierSummaryResponse = Record<string, unknown>;
 
 export interface SupplierDraftPayload {
   name: string;
@@ -120,6 +162,19 @@ export interface SupplierDocumentMetadataPayload {
   expiryDate?: string;
 }
 
+export interface SupplierDocumentUploadPayload {
+  documentTypeCode: string;
+  storageKey: string;
+  fileName: string;
+  contentType: string;
+  expiryDate?: string;
+  file: {
+    name: string;
+    mimeType: string;
+    buffer: Buffer;
+  };
+}
+
 export interface SupplierDeactivatePayload {
   reasonCode: string;
 }
@@ -146,6 +201,53 @@ export interface SupplierListParams extends QueryParams {
 }
 
 export interface SupplierActivityParams extends QueryParams {
+  page?: number;
+  size?: number;
+  sort?: string;
+}
+
+export interface SupplierProductListParams extends QueryParams {
+  search?: string;
+  status?: string;
+  category?: string;
+  minBuyingPrice?: number;
+  maxBuyingPrice?: number;
+  recentlyAdded?: string;
+  page?: number;
+  size?: number;
+  sort?: string;
+}
+
+export interface SupplierDocumentListParams extends QueryParams {
+  search?: string;
+  documentTypeCode?: string;
+  type?: string;
+  page?: number;
+  size?: number;
+  sort?: string;
+}
+
+export interface SupplierDocumentExportParams extends QueryParams {
+  search?: string;
+  documentTypeCode?: string;
+  type?: string;
+  exportType?: string;
+  page?: number;
+  size?: number;
+  sort?: string;
+}
+
+export interface SupplierRebateListParams extends QueryParams {
+  search?: string;
+  status?: string;
+  periodFrom?: string;
+  periodTo?: string;
+  page?: number;
+  size?: number;
+  sort?: string;
+}
+
+export interface SupplierPerformanceDeliveryParams extends QueryParams {
   page?: number;
   size?: number;
   sort?: string;
