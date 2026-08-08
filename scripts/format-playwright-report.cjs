@@ -396,6 +396,20 @@ function formatWorkflowSummaryLine(domain, summary) {
   return `${icon} ${domain} — ${summary.passed}/${summary.total} passed, ${summary.failed} failed, ${summary.skipped} skipped`;
 }
 
+function sortWorkflowSummaries(summaries) {
+  return [...summaries].sort((left, right) => {
+    if (left.summary.failed !== right.summary.failed) {
+      return right.summary.failed - left.summary.failed;
+    }
+
+    if (left.summary.skipped !== right.summary.skipped) {
+      return right.summary.skipped - left.summary.skipped;
+    }
+
+    return left.domain.localeCompare(right.domain);
+  });
+}
+
 function buildSlackMarkdown(report) {
   const tests = flattenTests(report.suites || []).map(normalizeResult);
   const byDomain = groupByDomain(tests);
@@ -409,6 +423,12 @@ function buildSlackMarkdown(report) {
   const failedTests = tests.filter((test) => test.status === 'failed');
   const skippedTests = tests.filter((test) => test.status === 'skipped');
   const expectedFailures = tests.filter((test) => test.expectedStatus === 'failed');
+  const workflowSummaries = sortWorkflowSummaries(
+    Object.keys(byDomain).map((domain) => ({
+      domain,
+      summary: summarizeTests(byDomain[domain]),
+    })),
+  );
 
   const lines = [];
   lines.push(`🧪 *${moduleName} Coverage Report*`);
@@ -424,13 +444,13 @@ function buildSlackMarkdown(report) {
   );
   lines.push('');
 
-  lines.push('*Pipeline:*');
-  for (const domain of Object.keys(byDomain).sort()) {
-    const summary = summarizeTests(byDomain[domain]);
+  lines.push('*Overall summary:*');
+  for (const { domain, summary } of workflowSummaries) {
     lines.push(formatWorkflowSummaryLine(domain, summary));
   }
   lines.push('');
 
+  lines.push('*Module breakdown:*');
   if (coverageNote) {
     lines.push(formatCoverageNoteForSlack(coverageNote));
     lines.push('');
