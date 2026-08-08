@@ -13,7 +13,7 @@ import {
   fetchPackageUnitItems,
 } from '../../helpers/packageUnitFactory';
 
-test.describe.serial('Commercials Service - Package Units', () => {
+test.describe.serial('@commercials Commercials Service - Package Units', () => {
   test.setTimeout(100000);
 
   test('creates a package unit and verifies detail and list visibility', async ({ commercialsService, packageUnitApi }) => {

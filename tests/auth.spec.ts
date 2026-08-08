@@ -4,7 +4,7 @@ test.describe.configure({ mode: 'serial' });
 
 // ─── Login ────────────────────────────────────────────────────────────────────
 
-test.describe('POST /login', () => {
+test.describe('@auth POST /login', () => {
   test('returns 200 with valid credentials', async ({ authFlows }) => {
     await authFlows.loginValid();
   });
@@ -20,7 +20,7 @@ test.describe('POST /login', () => {
 
 // ─── MFA Verify (authenticator flow — Step 2 of login) ───────────────────────
 
-test.describe('POST /auth/mfa/verify', () => {
+test.describe('@auth POST /auth/mfa/verify', () => {
   test('returns 200 with a valid TOTP code and response contains token', async ({ authFlows }) => {
     await authFlows.verifyMfaValid();
   });
@@ -32,7 +32,7 @@ test.describe('POST /auth/mfa/verify', () => {
 
 // ─── Full authenticator flow ──────────────────────────────────────────────────
 
-test.describe('Full authenticator login flow', () => {
+test.describe('@auth Full authenticator login flow', () => {
   test('login → mfa/verify returns a valid token', async ({ authFlows }) => {
     await authFlows.fullLoginFlow();
   });
@@ -45,7 +45,7 @@ test.describe('Full authenticator login flow', () => {
 
 // ─── MFA Setup (one-time onboarding — not part of daily login) ───────────────
 
-test.describe('POST /auth/mfa/setup', () => {
+test.describe('@auth POST /auth/mfa/setup', () => {
   test('returns 200 and a secret', async ({ authFlows }) => {
     await authFlows.setupMfa();
   });
@@ -53,7 +53,7 @@ test.describe('POST /auth/mfa/setup', () => {
 
 // ─── Forgot Password ──────────────────────────────────────────────────────────
 
-test.describe.skip('POST /login/forgetPassword', () => {
+test.describe.skip('@auth POST /login/forgetPassword', () => {
   test('returns 200 for a valid username', async ({ authFlows }) => {
     await authFlows.forgotPasswordValid();
   });

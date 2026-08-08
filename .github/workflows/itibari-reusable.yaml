@@ -1,0 +1,86 @@
+name: Itibari Reusable Playwright Runner
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: false
+        default: ""
+      moduleName:
+        type: string
+        required: true
+      shardIndex:
+        type: string
+        required: true
+      shardTotal:
+        type: string
+        required: true
+      environment:
+        type: string
+        required: true
+      use-cache:
+        type: boolean
+        default: true
+      node-version:
+        type: string
+        default: "20"
+    secrets:
+      MS_USER_EMAIL:
+        required: true
+      MS_USER_PASSWORD:
+        required: true
+      MS_TOTP_SECRET:
+        required: true
+      MS_DEV_BASE_URL:
+        required: true
+
+jobs:
+  run-playwright-tests:
+    name: ${{ inputs.moduleName }} - Shard ${{ inputs.shardIndex }}/${{ inputs.shardTotal }}
+    runs-on: ubuntu-latest
+
+    env:
+      CI: true
+      ENVIRONMENT: ${{ inputs.environment }}
+      MS_USER_EMAIL: ${{ secrets.MS_USER_EMAIL }}
+      MS_USER_PASSWORD: ${{ secrets.MS_USER_PASSWORD }}
+      MS_TOTP_SECRET: ${{ secrets.MS_TOTP_SECRET }}
+      MS_DEV_BASE_URL: ${{ secrets.MS_DEV_BASE_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Playwright API tests
+        id: playwright
+        continue-on-error: true
+        run: |
+          if [ -n "${{ inputs.tag }}" ]; then
+            npx playwright test --grep "${{ inputs.tag }}" --shard=${{ inputs.shardIndex }}/${{ inputs.shardTotal }}
+          else
+            npx playwright test --shard=${{ inputs.shardIndex }}/${{ inputs.shardTotal }}
+          fi
+
+      - name: Upload shard artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blob-report-${{ inputs.moduleName }}-${{ inputs.shardIndex }}
+          path: |
+            blob-report/
+            test-results/
+          if-no-files-found: warn
+
+      - name: Fail workflow if Playwright failed
+        if: steps.playwright.outcome == 'failure'
+        run: exit 1

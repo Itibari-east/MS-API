@@ -2,7 +2,7 @@ import { expect } from '@playwright/test';
 import test from '../../helpers/baseTests';
 import { getTokenOrSkip, unique, json, publicIdFrom } from '../../helpers/testHelpers';
 
-test.describe('Location Management', () => {
+test.describe('@usermanagement Location Management', () => {
   test('creates locations', async ({ userManagementFlows }) => {
     await userManagementFlows.locationsCreate();
   });

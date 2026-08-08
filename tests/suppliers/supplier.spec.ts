@@ -13,7 +13,7 @@ import {
   createSupplierDraft,
 } from '../../helpers/supplierFactory';
 
-test.describe.serial('Supplier API', () => {
+test.describe.serial('@supplier Supplier API', () => {
   test('creates a complete supplier and verifies detail, list visibility and activity events', async ({ supplierApi, accountingService }) => {
     const token = getTokenOrSkip();
     const supplier = await createCompleteSupplier(supplierApi, accountingService, token, 'Supplier Happy Path');
