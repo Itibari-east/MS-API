@@ -54,7 +54,6 @@ jobs:
           pattern: blob-report-commercials-*
           path: all-blob-reports
           merge-multiple: true
-          if-no-files-found: warn
 
       - name: Verify Slack webhook
         run: |
