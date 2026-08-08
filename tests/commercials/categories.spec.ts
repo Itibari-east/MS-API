@@ -11,7 +11,7 @@ import {
   fetchCategoryItems,
 } from '../../helpers/categoryFactory';
 
-test.describe.serial('Commercials Service - Categories', () => {
+test.describe.serial('@commercials Commercials Service - Categories', () => {
   test.setTimeout(100000);
 
   test('creates a category and verifies detail and list visibility', async ({ categoryApi }) => {

@@ -20,7 +20,7 @@ import {
   fetchSubClassItems,
 } from '../../helpers/hierarchyFactory';
 
-test.describe.serial('Commercials Service - Sub-Classes', () => {
+test.describe.serial('@commercials Commercials Service - Sub-Classes', () => {
   test.setTimeout(100000);
 
   test('creates a subclass under a valid class and verifies detail, list visibility and update flow', async ({

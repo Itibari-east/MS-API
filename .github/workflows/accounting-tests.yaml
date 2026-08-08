@@ -1,0 +1,79 @@
+name: Accounting Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target Env
+        type: choice
+        options: [PRODUCTION, DEV]
+        default: PRODUCTION
+
+env:
+  DEFAULT_ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'PRODUCTION' }}
+
+jobs:
+  run-playwright-tests:
+    uses: ./.github/workflows/itibari-reusable.yaml
+    with:
+      tag: "@accounting"
+      moduleName: "Accounting API"
+      environment: ${{ env.DEFAULT_ENVIRONMENT }}
+      shardIndex: 1
+      shardTotal: 1
+      node-version: 20
+      use-cache: true
+    secrets:
+      MS_USER_EMAIL: ${{ secrets.MS_USER_EMAIL }}
+      MS_USER_PASSWORD: ${{ secrets.MS_USER_PASSWORD }}
+      MS_TOTP_SECRET: ${{ secrets.MS_TOTP_SECRET }}
+      MS_DEV_BASE_URL: ${{ secrets.MS_DEV_BASE_URL }}
+
+  publish-report:
+    name: Publish Accounting report
+    runs-on: ubuntu-latest
+    if: always()
+    needs: run-playwright-tests
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      PLAYWRIGHT_MODULE_NAME: Accounting API
+      PLAYWRIGHT_ENVIRONMENT: ${{ env.DEFAULT_ENVIRONMENT }}
+    steps:
+      - name: Download shard artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: blob-report-Accounting API-*
+          path: all-blob-reports
+          merge-multiple: true
+          if-no-files-found: warn
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Merge Playwright reports
+        run: |
+          mkdir -p test-results
+          npx playwright merge-reports --reporter html ./all-blob-reports
+          npx playwright merge-reports --reporter json ./all-blob-reports > test-results/playwright-report.json
+
+      - name: Publish Slack summary
+        run: npm run report:slack -- test-results/playwright-report.json
+
+      - name: Upload merged report
+        uses: actions/upload-artifact@v4
+        with:
+          name: accounting-playwright-report
+          path: |
+            playwright-report/
+            test-results/playwright-report.json
+          if-no-files-found: warn

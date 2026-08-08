@@ -11,7 +11,7 @@ import {
   swiftCode,
 } from '../../utils/accountingTestHelpers';
 
-test.describe('Accounting Service', () => {
+test.describe('@accounting Accounting Service', () => {
   test('creates, updates, fetches and deletes a bank (JSON-only create)', async ({ accountingService }) => {
     const token = getTokenOrSkip();
     const bank = await createBank(accountingService, token, 'QA Bank');

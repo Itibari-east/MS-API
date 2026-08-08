@@ -1,6 +1,6 @@
 import test from '../../helpers/baseTests';
 
-test.describe('Permission Management', () => {
+test.describe('@usermanagement Permission Management', () => {
   test('creates permission groups and permissions', async ({ userManagementFlows }) => {
     await userManagementFlows.permissionGroupsCreate();
   });

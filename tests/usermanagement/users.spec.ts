@@ -2,7 +2,7 @@ import { expect } from '@playwright/test';
 import test from '../../helpers/baseTests';
 import { getTokenOrSkip, unique, json, publicIdFrom, firstContentPublicId } from '../../helpers/testHelpers';
 
-test.describe('User Management', () => {
+test.describe('@usermanagement User Management', () => {
   test('creates users', async ({ userManagementFlows }) => {
     await userManagementFlows.usersCreate();
   });
