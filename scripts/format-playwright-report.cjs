@@ -540,9 +540,6 @@ function buildSlackMarkdown(report) {
   );
   lines.push('');
 
-  lines.push(...buildExecutiveSummaryLines(workflowSummaries, totals));
-  lines.push('');
-
   lines.push('*Module breakdown:*');
   if (coverageNote && workflowSummaries.length <= 1) {
     lines.push(formatCoverageNoteForSlack(coverageNote));
@@ -556,6 +553,9 @@ function buildSlackMarkdown(report) {
   if (githubRunUrl) {
     lines.push(`*Logs:* <${githubRunUrl}|View GitHub run>`);
   }
+
+  lines.push('');
+  lines.push(...buildExecutiveSummaryLines(workflowSummaries, totals));
 
   return lines.join('\n').trim();
 }
