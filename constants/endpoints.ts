@@ -34,6 +34,12 @@ export const serviceConstants = {
       },
       allowedTypes: ['Weight', 'Volume', 'Count', 'Length', 'Area', 'Other'],
     },
+    category: {
+      status: {
+        active: 'ACTIVE',
+        inactive: 'INACTIVE',
+      },
+    },
   },
   accounting: {
     samples: {
