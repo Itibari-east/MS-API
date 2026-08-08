@@ -8,6 +8,14 @@ function readJson(filePath) {
   return JSON.parse(raw);
 }
 
+function stripAnsi(value) {
+  return String(value || '').replace(
+    // eslint-disable-next-line no-control-regex
+    /\u001B\[[0-9;]*m/g,
+    '',
+  );
+}
+
 function toTitleCase(value) {
   return value
     .replace(/[_-]+/g, ' ')
@@ -65,10 +73,124 @@ function flattenTests(suites, bucket = []) {
   return bucket;
 }
 
+function getFailedResult(test) {
+  const results = test.results || [];
+  const failedResults = results.filter((result) => result.status === 'failed' || result.status === 'timedOut');
+  return failedResults[failedResults.length - 1] || results[results.length - 1] || {};
+}
+
+function readStdIOEntry(entry) {
+  if (!entry) {
+    return '';
+  }
+
+  if (typeof entry.text === 'string') {
+    return entry.text;
+  }
+
+  if (typeof entry.buffer === 'string') {
+    return Buffer.from(entry.buffer, 'base64').toString('utf8');
+  }
+
+  return '';
+}
+
+function normalizeTextBlock(value) {
+  return stripAnsi(value)
+    .replace(/\r\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function truncateText(value, maxLength = 1200) {
+  const text = normalizeTextBlock(value);
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  return `${text.slice(0, maxLength).trimEnd()}\n... [truncated ${text.length - maxLength} characters]`;
+}
+
+function codeBlock(label, value, maxLength = 1200) {
+  const text = truncateText(value, maxLength);
+  if (!text) {
+    return '';
+  }
+
+  return `*${label}:*\n\`\`\`\n${text}\n\`\`\``;
+}
+
+function formatAttachments(attachments = []) {
+  if (!attachments.length) {
+    return '';
+  }
+
+  const lines = attachments.map((attachment) => {
+    const fileName = attachment.path ? path.basename(attachment.path) : '';
+    const name = attachment.name || 'attachment';
+    const suffix = fileName && fileName !== name ? ` (${fileName})` : '';
+    return `- ${name}${suffix}${attachment.contentType ? ` [${attachment.contentType}]` : ''}`;
+  });
+
+  return [`*Attachments:*`, ...lines].join('\n');
+}
+
+function formatStream(title, entries) {
+  const content = entries.map(readStdIOEntry).filter(Boolean).join('\n');
+  if (!content.trim()) {
+    return '';
+  }
+
+  return codeBlock(title, content, 1000);
+}
+
+function formatFailureDetails(test) {
+  const failedResult = getFailedResult(test);
+  const errorParts = [];
+
+  if (failedResult.error?.message) {
+    errorParts.push(failedResult.error.message);
+  }
+
+  if (failedResult.error?.stack && failedResult.error.stack !== failedResult.error.message) {
+    errorParts.push(failedResult.error.stack);
+  }
+
+  for (const additionalError of failedResult.errors || []) {
+    if (additionalError?.message) {
+      errorParts.push(additionalError.message);
+    }
+  }
+
+  const sections = [];
+  const errorSection = codeBlock('Error', errorParts.join('\n\n') || 'No failure message available', 1600);
+  if (errorSection) {
+    sections.push(errorSection);
+  }
+
+  const stdoutSection = formatStream('Stdout', failedResult.stdout || []);
+  if (stdoutSection) {
+    sections.push(stdoutSection);
+  }
+
+  const stderrSection = formatStream('Stderr', failedResult.stderr || []);
+  if (stderrSection) {
+    sections.push(stderrSection);
+  }
+
+  const attachmentSection = formatAttachments(failedResult.attachments || []);
+  if (attachmentSection) {
+    sections.push(attachmentSection);
+  }
+
+  return sections.join('\n');
+}
+
 function normalizeResult(test) {
-  const lastResult = test.results[test.results.length - 1] || {};
-  const hasFailedResult = test.results.some((result) => result.status === 'failed' || result.status === 'timedOut');
-  const hasSkippedResult = test.results.some((result) => result.status === 'skipped');
+  const results = test.results || [];
+  const lastResult = results[results.length - 1] || {};
+  const hasFailedResult = results.some((result) => result.status === 'failed' || result.status === 'timedOut');
+  const hasSkippedResult = results.some((result) => result.status === 'skipped');
   const status =
     lastResult.status === 'failed' || lastResult.status === 'timedOut'
       ? 'failed'
@@ -84,6 +206,7 @@ function normalizeResult(test) {
     ...test,
     status,
     failure: errorText,
+    failureResult: getFailedResult(test),
     domain: getDomainFromFile(test.file),
   };
 }
@@ -112,8 +235,12 @@ function summarizeTests(tests) {
 
 function formatFailure(test) {
   const location = test.file ? ` (${path.relative(process.cwd(), test.file)}:${test.line || 1})` : '';
-  const firstLine = (test.failure || 'No failure message available').split('\n')[0];
-  return `- ${test.title}${location}\n  ${firstLine}`;
+  const failedResult = test.failureResult || {};
+  const retryText = typeof failedResult.retry === 'number' ? `  Retry: ${failedResult.retry + 1}` : '';
+  const durationText = typeof failedResult.duration === 'number' ? `  Duration: ${failedResult.duration}ms` : '';
+  const details = formatFailureDetails({ ...test, failureResult: failedResult });
+
+  return [`- ${test.title}${location}${retryText}${durationText}`, details ? details : '  No failure details available'].join('\n');
 }
 
 function buildSlackMarkdown(report) {
