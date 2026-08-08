@@ -5,6 +5,7 @@ import { _AuthService } from './authservice';
 import { extractAuthToken } from './requestHelpers';
 import { generateTotpCode } from '../utils/totp';
 import { readToken } from '../helpers/testHelpers';
+import { joinUrl } from '../utils/url';
 
 type LoginResult = {
   challengeToken: string;
@@ -68,7 +69,7 @@ export class _AuthFlows {
   }
 
   async loginMissingRequiredFields(request: APIRequestContext) {
-    const response = await request.post(`${_config.baseEndpoint}/api/v1/login`, {
+    const response = await request.post(joinUrl(_config.baseEndpoint, 'api/v1', 'login'), {
       headers: { 'Content-Type': 'application/json', accept: '*/*' },
       data: { channel: serviceConstants.auth.channel.web },
     });
