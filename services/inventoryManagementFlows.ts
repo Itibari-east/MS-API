@@ -8,6 +8,42 @@ type CreatedEntity = {
   publicId: string;
 };
 
+type GeoJsonPolygon = {
+  type: 'Polygon';
+  coordinates: number[][][];
+};
+
+type GeofenceInput = {
+  name?: string;
+  description?: string;
+  geoJson?: GeoJsonPolygon;
+  priority?: number;
+  active?: boolean;
+  maxAreaSqKm?: number;
+};
+
+function buildSquareGeoJson(centerLat: number, centerLon: number, delta = 0.01): GeoJsonPolygon {
+  return {
+    type: 'Polygon',
+    coordinates: [
+      [
+        [centerLon, centerLat],
+        [centerLon + delta, centerLat],
+        [centerLon + delta, centerLat + delta],
+        [centerLon, centerLat + delta],
+        [centerLon, centerLat],
+      ],
+    ],
+  };
+}
+
+type GeofencePair = {
+  regionPublicId: string;
+  warehouse: CreatedEntity;
+  source: CreatedEntity;
+  replacement: CreatedEntity;
+};
+
 export class _InventoryManagementFlows {
   constructor(
     private readonly inventoryManagement: _InventoryManagementService,
@@ -58,27 +94,96 @@ export class _InventoryManagementFlows {
     return { name, publicId: publicIdFrom(await json(response)) };
   }
 
-  private async createGeofence(token: string, regionPublicId: string, warehousePublicId: string): Promise<CreatedEntity | null> {
-    const name = unique('QA Geofence');
-    const lon = 39.0 + Math.random() * 0.3;
-    const lat = -6.3 + Math.random() * 0.3;
-    const response = await this.inventoryManagement.createGeofence(token, {
-      name,
-      description: 'Created by API automation',
-      geoJson: {
-        type: 'Polygon',
-        coordinates: [[[lon, lat], [lon + 0.01, lat], [lon + 0.01, lat + 0.01], [lon, lat + 0.01], [lon, lat]]],
-      },
-      priority: 1,
+  private async deactivateWarehouse(token: string, publicId: string, regionPublicId: string, currentName: string) {
+    const response = await this.inventoryManagement.updateWarehouse(token, publicId, {
+      warehouseName: `${currentName}-inactive`,
+      warehouseType: 'Main',
+      regionPublicId,
+      lat: '-6.1667',
+      lon: '39.2000',
+      active: false,
+    });
+    expect([200, 201]).toContain(response.status());
+    return response;
+  }
+
+  private async createGeofencePair(
+    token: string,
+    warehousePrefix: string,
+    sourcePrefix: string,
+    replacementPrefix: string,
+  ): Promise<GeofencePair> {
+    const regionPublicId = await this.getFreeRegionPublicId(token);
+    const warehouse = await this.createWarehouse(token, regionPublicId, warehousePrefix);
+    const source = await this.createGeofence(token, regionPublicId, warehouse.publicId, {
+      name: unique(sourcePrefix),
+      geoJson: buildSquareGeoJson(-6.34, 39.04, 0.02),
+    });
+    const replacement = await this.createGeofence(token, regionPublicId, warehouse.publicId, {
+      name: unique(replacementPrefix),
+      geoJson: buildSquareGeoJson(-6.28, 39.12, 0.02),
+    });
+
+    return { regionPublicId, warehouse, source, replacement };
+  }
+
+  private buildGeofencePayload(regionPublicId: string, warehousePublicId: string, input: GeofenceInput = {}) {
+    return {
+      name: input.name ?? unique('QA Geofence'),
+      description: input.description ?? 'Created by API automation',
+      geoJson: input.geoJson ?? buildSquareGeoJson(-6.3 + Math.random() * 0.3, 39.0 + Math.random() * 0.3),
+      priority: input.priority ?? 1,
       regionPublicId,
       warehousePublicId,
-    });
-    expect([200, 201, 400]).toContain(response.status());
-    if (response.status() === 400) {
-      test.skip(true, 'geofence overlaps with existing — skipping remainder');
-      return null;
-    }
-    return { name, publicId: publicIdFrom(await json(response)) };
+      maxAreaSqKm: input.maxAreaSqKm ?? 10,
+      ...(typeof input.active === 'boolean' ? { active: input.active } : {}),
+    };
+  }
+
+  private async createGeofence(
+    token: string,
+    regionPublicId: string,
+    warehousePublicId: string,
+    input: GeofenceInput = {},
+  ): Promise<CreatedEntity> {
+    const payload = this.buildGeofencePayload(regionPublicId, warehousePublicId, input);
+    const response = await this.inventoryManagement.createGeofence(token, payload);
+    expect([200, 201]).toContain(response.status());
+    return { name: payload.name, publicId: publicIdFrom(await json(response)) };
+  }
+
+  private async updateGeofence(
+    token: string,
+    publicId: string,
+    regionPublicId: string,
+    warehousePublicId: string,
+    input: GeofenceInput = {},
+  ) {
+    const payload = this.buildGeofencePayload(regionPublicId, warehousePublicId, input);
+    const response = await this.inventoryManagement.updateGeofence(token, publicId, payload);
+    expect([200, 201]).toContain(response.status());
+    return response;
+  }
+
+  private async attemptGeofenceCreate(
+    token: string,
+    regionPublicId: string,
+    warehousePublicId: string,
+    input: GeofenceInput = {},
+  ) {
+    const payload = this.buildGeofencePayload(regionPublicId, warehousePublicId, input);
+    return this.inventoryManagement.createGeofence(token, payload);
+  }
+
+  private async attemptGeofenceUpdate(
+    token: string,
+    publicId: string,
+    regionPublicId: string,
+    warehousePublicId: string,
+    input: GeofenceInput = {},
+  ) {
+    const payload = this.buildGeofencePayload(regionPublicId, warehousePublicId, input);
+    return this.inventoryManagement.updateGeofence(token, publicId, payload);
   }
 
   async warehouseCrud() {
@@ -130,19 +235,307 @@ export class _InventoryManagementFlows {
 
   async geofenceCrud() {
     const token = getTokenOrSkip();
-    const regionPublicId = await this.getFirstRegionPublicId(token);
-    const warehousePublicId = await this.getFirstWarehousePublicId(token);
-    const geofence = await this.createGeofence(token, regionPublicId, warehousePublicId);
-    if (!geofence) {
-      return;
-    }
+    const regionPublicId = await this.getFreeRegionPublicId(token);
+    const warehouse = await this.createWarehouse(token, regionPublicId, 'QA Warehouse Geofence');
+    const geofence = await this.createGeofence(token, regionPublicId, warehouse.publicId, {
+      name: unique('QA Geofence'),
+      geoJson: buildSquareGeoJson(-6.3, 39.0, 0.02),
+    });
 
     const getRes = await this.inventoryManagement.getGeofence(token, geofence.publicId);
     expect(getRes.status()).toBe(200);
-    expect(await json(getRes)).toHaveProperty('publicId', geofence.publicId);
+    const detail = await json(getRes);
+    expect(detail).toMatchObject({
+      publicId: geofence.publicId,
+      name: geofence.name,
+    });
+
+    const updateRes = await this.updateGeofence(token, geofence.publicId, regionPublicId, warehouse.publicId, {
+      name: unique('QA Geofence Updated'),
+      description: 'Updated by API automation',
+      geoJson: buildSquareGeoJson(-6.32, 39.12, 0.02),
+    });
+    expect([200, 201]).toContain(updateRes.status());
+    const updated = await json(updateRes);
+    expect(updated).toHaveProperty('publicId', geofence.publicId);
+    expect(updated).toHaveProperty('name');
 
     const deleteRes = await this.inventoryManagement.deleteGeofence(token, geofence.publicId);
     expect([200, 204, 400, 404]).toContain(deleteRes.status());
+  }
+
+  async listGeofences() {
+    const token = getTokenOrSkip();
+    const regionPublicId = await this.getFreeRegionPublicId(token);
+    const warehouse = await this.createWarehouse(token, regionPublicId, 'QA Warehouse Geofence');
+    const geofence = await this.createGeofence(token, regionPublicId, warehouse.publicId, {
+      name: unique('QA Geofence List'),
+    });
+
+    const listRes = await this.inventoryManagement.listGeofences(token, {
+      page: 0,
+      size: 10,
+      sort: 'creationTime,DESC',
+      search: geofence.name,
+      active: true,
+    });
+    expect(listRes.status()).toBe(200);
+    const body = await json(listRes);
+    expect(body).toHaveProperty('content');
+    expect(body).toHaveProperty('totalElements');
+    expect(Array.isArray(body.content)).toBeTruthy();
+    expect(body.content.some((item: { publicId?: string }) => item.publicId === geofence.publicId)).toBeTruthy();
+  }
+
+  async overlapWithinWarehouse() {
+    const token = getTokenOrSkip();
+    const regionPublicId = await this.getFreeRegionPublicId(token);
+    const warehouse = await this.createWarehouse(token, regionPublicId, 'QA Warehouse Geofence');
+    const geofence = await this.createGeofence(token, regionPublicId, warehouse.publicId, {
+      name: unique('QA Geofence A'),
+      geoJson: buildSquareGeoJson(-6.3, 39.0, 0.02),
+    });
+
+    const response = await this.attemptGeofenceCreate(token, regionPublicId, warehouse.publicId, {
+      name: unique('QA Geofence B'),
+      geoJson: buildSquareGeoJson(-6.295, 39.005, 0.02),
+    });
+    expect([400, 409, 422]).toContain(response.status());
+
+    const detailRes = await this.inventoryManagement.getGeofence(token, geofence.publicId);
+    expect(detailRes.status()).toBe(200);
+    expect(await json(detailRes)).toHaveProperty('publicId', geofence.publicId);
+  }
+
+  async overlapAcrossWarehouses() {
+    const token = getTokenOrSkip();
+    const regionPublicId = await this.getFreeRegionPublicId(token);
+    const warehouseA = await this.createWarehouse(token, regionPublicId, 'QA Warehouse A');
+    const warehouseB = await this.createWarehouse(token, regionPublicId, 'QA Warehouse B');
+    const geofence = await this.createGeofence(token, regionPublicId, warehouseA.publicId, {
+      name: unique('QA Geofence A'),
+      geoJson: buildSquareGeoJson(-6.31, 39.02, 0.02),
+    });
+
+    const response = await this.attemptGeofenceCreate(token, regionPublicId, warehouseB.publicId, {
+      name: unique('QA Geofence B'),
+      geoJson: buildSquareGeoJson(-6.315, 39.025, 0.02),
+    });
+    expect([400, 409, 422]).toContain(response.status());
+
+    const detailRes = await this.inventoryManagement.getGeofence(token, geofence.publicId);
+    expect(detailRes.status()).toBe(200);
+    expect(await json(detailRes)).toHaveProperty('publicId', geofence.publicId);
+  }
+
+  async overlapOnUpdate() {
+    const token = getTokenOrSkip();
+    const regionPublicId = await this.getFreeRegionPublicId(token);
+    const warehouse = await this.createWarehouse(token, regionPublicId, 'QA Warehouse Geofence');
+    const fenceA = await this.createGeofence(token, regionPublicId, warehouse.publicId, {
+      name: unique('QA Geofence A'),
+      geoJson: buildSquareGeoJson(-6.33, 39.03, 0.02),
+    });
+    const fenceB = await this.createGeofence(token, regionPublicId, warehouse.publicId, {
+      name: unique('QA Geofence B'),
+      geoJson: buildSquareGeoJson(-6.31, 39.05, 0.02),
+    });
+
+    const response = await this.attemptGeofenceUpdate(token, fenceA.publicId, regionPublicId, warehouse.publicId, {
+      name: unique('QA Geofence A Updated'),
+      geoJson: buildSquareGeoJson(-6.31, 39.05, 0.02),
+    });
+    expect([400, 409, 422]).toContain(response.status());
+
+    const detailRes = await this.inventoryManagement.getGeofence(token, fenceA.publicId);
+    expect(detailRes.status()).toBe(200);
+    const detail = await json(detailRes);
+    expect(detail).toHaveProperty('publicId', fenceA.publicId);
+    expect(detail).toHaveProperty('name', fenceA.name);
+    expect(detail).not.toHaveProperty('name', fenceB.name);
+  }
+
+  async deactivateGeofence() {
+    const token = getTokenOrSkip();
+    const regionPublicId = await this.getFreeRegionPublicId(token);
+    const warehouse = await this.createWarehouse(token, regionPublicId, 'QA Warehouse Geofence');
+    const geofence = await this.createGeofence(token, regionPublicId, warehouse.publicId, {
+      name: unique('QA Geofence Deactivate'),
+      geoJson: buildSquareGeoJson(-6.34, 39.04, 0.02),
+    });
+
+    const deactivateRes = await this.inventoryManagement.deactivateGeofence(token, geofence.publicId);
+    expect([200, 204]).toContain(deactivateRes.status());
+
+    const detailRes = await this.inventoryManagement.getGeofence(token, geofence.publicId);
+    expect(detailRes.status()).toBe(200);
+    const detail = await json(detailRes);
+    expect(detail).toHaveProperty('publicId', geofence.publicId);
+    expect(detail).toHaveProperty('name', geofence.name);
+    if (Object.prototype.hasOwnProperty.call(detail, 'active')) {
+      expect(detail.active).toBeFalsy();
+    }
+    if (Object.prototype.hasOwnProperty.call(detail, 'status')) {
+      expect(String(detail.status).toLowerCase()).toContain('inactive');
+    }
+  }
+
+  async deleteGeofenceWithReplacement() {
+    const token = getTokenOrSkip();
+    const { warehouse, source, replacement } = await this.createGeofencePair(
+      token,
+      'QA Warehouse Replacement Delete',
+      'QA Geofence Delete Source',
+      'QA Geofence Delete Replacement',
+    );
+
+    const deleteRes = await this.inventoryManagement.deleteGeofence(token, source.publicId, replacement.publicId);
+    expect([200, 204]).toContain(deleteRes.status());
+
+    const sourceRes = await this.inventoryManagement.getGeofence(token, source.publicId);
+    expect([400, 404]).toContain(sourceRes.status());
+
+    const replacementRes = await this.inventoryManagement.getGeofence(token, replacement.publicId);
+    expect(replacementRes.status()).toBe(200);
+    expect(await json(replacementRes)).toHaveProperty('publicId', replacement.publicId);
+
+    await this.inventoryManagement.deleteGeofence(token, replacement.publicId);
+    await this.inventoryManagement.deleteWarehouse(token, warehouse.publicId);
+  }
+
+  async deactivateGeofenceWithReplacement() {
+    const token = getTokenOrSkip();
+    const { warehouse, source, replacement } = await this.createGeofencePair(
+      token,
+      'QA Warehouse Replacement Deactivate',
+      'QA Geofence Deactivate Source',
+      'QA Geofence Deactivate Replacement',
+    );
+
+    const deactivateRes = await this.inventoryManagement.deactivateGeofence(token, source.publicId, replacement.publicId);
+    expect([200, 204]).toContain(deactivateRes.status());
+
+    const sourceRes = await this.inventoryManagement.getGeofence(token, source.publicId);
+    expect(sourceRes.status()).toBe(200);
+    const sourceBody = await json(sourceRes);
+    if (Object.prototype.hasOwnProperty.call(sourceBody, 'active')) {
+      expect(sourceBody.active).toBeFalsy();
+    }
+    if (Object.prototype.hasOwnProperty.call(sourceBody, 'status')) {
+      expect(String(sourceBody.status).toLowerCase()).toContain('inactive');
+    }
+
+    const replacementRes = await this.inventoryManagement.getGeofence(token, replacement.publicId);
+    expect(replacementRes.status()).toBe(200);
+    expect(await json(replacementRes)).toHaveProperty('publicId', replacement.publicId);
+
+    await this.inventoryManagement.deleteGeofence(token, replacement.publicId);
+    await this.inventoryManagement.deleteGeofence(token, source.publicId);
+    await this.inventoryManagement.deleteWarehouse(token, warehouse.publicId);
+  }
+
+  async geofenceAdjacentNonOverlapping() {
+    const token = getTokenOrSkip();
+    const regionPublicId = await this.getFreeRegionPublicId(token);
+    const warehouse = await this.createWarehouse(token, regionPublicId, 'QA Warehouse Adjacent');
+    const first = await this.createGeofence(token, regionPublicId, warehouse.publicId, {
+      name: unique('QA Geofence Adjacent A'),
+      geoJson: {
+        type: 'Polygon',
+        coordinates: [[[39.0, -6.3], [39.02, -6.3], [39.02, -6.28], [39.0, -6.28], [39.0, -6.3]]],
+      },
+    });
+
+    const response = await this.attemptGeofenceCreate(token, regionPublicId, warehouse.publicId, {
+      name: unique('QA Geofence Adjacent B'),
+      geoJson: {
+        type: 'Polygon',
+        coordinates: [[[39.02, -6.3], [39.04, -6.3], [39.04, -6.28], [39.02, -6.28], [39.02, -6.3]]],
+      },
+    });
+    expect([200, 201]).toContain(response.status());
+
+    const second = { name: unique('QA Geofence Adjacent B'), publicId: publicIdFrom(await json(response)) };
+    const firstDetailRes = await this.inventoryManagement.getGeofence(token, first.publicId);
+    const secondDetailRes = await this.inventoryManagement.getGeofence(token, second.publicId);
+    expect(firstDetailRes.status()).toBe(200);
+    expect(secondDetailRes.status()).toBe(200);
+
+    await this.inventoryManagement.deleteGeofence(token, second.publicId);
+    await this.inventoryManagement.deleteGeofence(token, first.publicId);
+    await this.inventoryManagement.deleteWarehouse(token, warehouse.publicId);
+  }
+
+  async geofenceInactiveWarehouse() {
+    const token = getTokenOrSkip();
+    const regionPublicId = await this.getFreeRegionPublicId(token);
+    const warehouse = await this.createWarehouse(token, regionPublicId, 'QA Warehouse Inactive');
+    await this.deactivateWarehouse(token, warehouse.publicId, regionPublicId, warehouse.name);
+
+    const response = await this.attemptGeofenceCreate(token, regionPublicId, warehouse.publicId, {
+      name: unique('QA Geofence Inactive Warehouse'),
+    });
+    expect([400, 409, 422]).toContain(response.status());
+
+    await this.inventoryManagement.deleteWarehouse(token, warehouse.publicId);
+  }
+
+  async geofenceMalformedPolygon() {
+    const token = getTokenOrSkip();
+    const regionPublicId = await this.getFreeRegionPublicId(token);
+    const warehouse = await this.createWarehouse(token, regionPublicId, 'QA Warehouse Malformed');
+
+    const response = await this.attemptGeofenceCreate(token, regionPublicId, warehouse.publicId, {
+      name: unique('QA Geofence Malformed'),
+      geoJson: {
+        type: 'Polygon',
+        coordinates: [[[39.0, -6.3], [39.02, -6.3], [39.02, -6.28], [39.0, -6.28]]],
+      } as GeoJsonPolygon,
+    });
+    expect([400, 422]).toContain(response.status());
+
+    await this.inventoryManagement.deleteWarehouse(token, warehouse.publicId);
+  }
+
+  async geofenceInvalidCoordinates() {
+    const token = getTokenOrSkip();
+    const regionPublicId = await this.getFreeRegionPublicId(token);
+    const warehouse = await this.createWarehouse(token, regionPublicId, 'QA Warehouse Invalid Coords');
+
+    const response = await this.attemptGeofenceCreate(token, regionPublicId, warehouse.publicId, {
+      name: unique('QA Geofence Invalid Coords'),
+      geoJson: {
+        type: 'Polygon',
+        coordinates: [[[999, -999], [1000, -999], [1000, -998], [999, -998], [999, -999]]],
+      },
+    });
+    expect([400, 422]).toContain(response.status());
+
+    await this.inventoryManagement.deleteWarehouse(token, warehouse.publicId);
+  }
+
+  async geofenceMissingWarehouse() {
+    const token = getTokenOrSkip();
+    const regionPublicId = await this.getFreeRegionPublicId(token);
+    const warehouse = await this.createWarehouse(token, regionPublicId, 'QA Warehouse Geofence');
+    const payload = this.buildGeofencePayload(regionPublicId, warehouse.publicId, {
+      name: unique('QA Geofence Missing Warehouse'),
+    }) as Record<string, unknown>;
+    delete payload.warehousePublicId;
+
+    const res = await this.inventoryManagement.createGeofence(token, payload);
+    expect([400, 422]).toContain(res.status());
+  }
+
+  async geofenceInvalidWarehouse() {
+    const token = getTokenOrSkip();
+    const regionPublicId = await this.getFreeRegionPublicId(token);
+    const payload = this.buildGeofencePayload(regionPublicId, '00000000-0000-0000-0000-000000000000', {
+      name: unique('QA Geofence Invalid Warehouse'),
+    });
+
+    const res = await this.inventoryManagement.createGeofence(token, payload);
+    expect([400, 404, 422]).toContain(res.status());
   }
 
   async resolveLocation() {
