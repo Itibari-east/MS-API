@@ -107,7 +107,7 @@ function formatTestLocation(test) {
 }
 
 function formatSectionHeading(title) {
-  return `*## ${title}*`;
+  return `*${title}*`;
 }
 
 function formatCodeBlock(lines) {
