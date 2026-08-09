@@ -36,6 +36,9 @@ Required secrets:
 - `MS_TOTP_SECRET`
 - `MS_DEV_BASE_URL`
 - `SLACK_WEBHOOK_URL`
+- `SLACK_BOT_TOKEN`
+- `SLACK_CHANNEL_ID`
 
-The workflow writes a JSON Playwright report, formats it into a Slack summary
-grouped by domain, and includes failed tests per domain in the message body.
+When `SLACK_BOT_TOKEN` and `SLACK_CHANNEL_ID` are available, the workflow posts
+the report summary in the channel and sends the module breakdown as threaded
+replies. If those are missing, it falls back to the single-message webhook flow.
