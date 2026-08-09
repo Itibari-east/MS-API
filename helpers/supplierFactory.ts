@@ -43,6 +43,8 @@ export interface SupplierSeed {
   name: string;
   publicId: string;
   draft?: SupplierRecord;
+  bank?: CreatedEntity;
+  branch?: CreatedEntity;
 }
 
 export interface SupplierDocumentSeed {
@@ -386,7 +388,11 @@ export async function createCompleteSupplier(
   const confirmRes = await supplierApi.confirmSupplier(token, seed.publicId);
   expect(confirmRes.status).toBe(200);
 
-  return seed;
+  return {
+    ...seed,
+    bank,
+    branch,
+  };
 }
 
 export async function createMultipleSuppliers(
