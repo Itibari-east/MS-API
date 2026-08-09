@@ -418,7 +418,7 @@ function formatPassRate(passed, total) {
   return `${Math.round((passed / total) * 100)}%`;
 }
 
-function buildExecutiveSummaryLines(workflowSummaries, totals) {
+function buildModuleSummaryTableLines(workflowSummaries, totals) {
   const rows = workflowSummaries.map(({ domain, summary }) => ({
     module: summary.failed > 0 ? `❌ ${domain}` : summary.skipped > 0 ? `⚠️ ${domain}` : `✅ ${domain}`,
     total: String(summary.total),
@@ -461,6 +461,23 @@ function buildExecutiveSummaryLines(workflowSummaries, totals) {
   }
   lines.push('```');
 
+  return lines;
+}
+
+function buildOverallSummaryLines(totals) {
+  const lines = [];
+  lines.push('*Full Test Run Summary*');
+  lines.push(`🟢 *${totals.passed}* Passed   🔴 *${totals.failed}* Failed   ⏭️ *${totals.skipped}* Skipped   Total: *${totals.total}*`);
+  lines.push(`Overall Pass Rate: *${formatPassRate(totals.passed, totals.total)}*`);
+
+  return lines;
+}
+
+function buildExecutiveSummaryLines(workflowSummaries, totals) {
+  const lines = [];
+  lines.push(...buildOverallSummaryLines(totals));
+  lines.push('');
+  lines.push(...buildModuleSummaryTableLines(workflowSummaries, totals));
   return lines;
 }
 
@@ -555,7 +572,9 @@ function buildSlackMarkdown(report) {
   lines.push('');
 
   if (reportLayout === 'full-run') {
-    lines.push(...buildExecutiveSummaryLines(workflowSummaries, totals));
+    lines.push(...buildModuleSummaryTableLines(workflowSummaries, totals));
+    lines.push('');
+    lines.push(...buildOverallSummaryLines(totals));
   } else {
     lines.push('*Module breakdown:*');
     if (coverageNote && workflowSummaries.length <= 1) {
