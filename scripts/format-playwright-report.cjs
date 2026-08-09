@@ -274,24 +274,6 @@ function formatCoverageNoteForSlack(note) {
     .replace(/\r\n/g, '\n')
     .split('\n');
   const outputLines = [];
-  let currentSectionTitle = '';
-  let inCodeBlockSection = false;
-  let sectionLines = [];
-  const codeBlockSections = new Set(['covered', 'expected failures', 'failed', 'skipped', 'missing coverage']);
-
-  const flushSection = () => {
-    if (!sectionLines.length) {
-      return;
-    }
-
-    if (inCodeBlockSection) {
-      outputLines.push(...formatCodeBlock(sectionLines.map(prefixCoverageItem)));
-    } else {
-      outputLines.push(...sectionLines);
-    }
-
-    sectionLines = [];
-  };
 
   for (const rawLine of inputLines) {
     const line = rawLine.replace(/\s+$/, '');
@@ -299,23 +281,12 @@ function formatCoverageNoteForSlack(note) {
     const headingMatch = line.match(/^##\s+(.+)$/);
 
     if (titleMatch) {
-      flushSection();
       outputLines.push(`*${titleMatch[1].trim()}*`);
       continue;
     }
 
     if (headingMatch) {
-      flushSection();
-      currentSectionTitle = headingMatch[1].trim().toLowerCase();
-      inCodeBlockSection = codeBlockSections.has(currentSectionTitle);
       outputLines.push(formatSectionHeading(headingMatch[1].trim()));
-      continue;
-    }
-
-    if (inCodeBlockSection || currentSectionTitle === 'covered' || currentSectionTitle === 'missing coverage') {
-      if (line.trim()) {
-        sectionLines.push(line);
-      }
       continue;
     }
 
@@ -327,8 +298,6 @@ function formatCoverageNoteForSlack(note) {
 
     outputLines.push(line);
   }
-
-  flushSection();
 
   return outputLines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
 }
@@ -525,11 +494,9 @@ function buildServiceSummaryLines(workflowSummaries, totals) {
 }
 
 function formatTestBullets(tests) {
-  return formatCodeBlock(
-    tests.length
-      ? tests.map((test) => `- ${formatTestTitle(test)}${test.file ? ` (${formatTestLocation(test)})` : ''}`)
-      : ['- None'],
-  );
+  return tests.length
+    ? tests.map((test) => `- ${formatTestTitle(test)}${test.file ? ` (${formatTestLocation(test)})` : ''}`)
+    : ['- None'];
 }
 
 function buildModuleHeaderLines(domain, summary, environment, githubRunUrl) {
@@ -657,8 +624,14 @@ function buildSlackMarkdown(report) {
     lines.push('');
     lines.push('*Module breakdown:*');
     if (coverageNote && workflowSummaries.length <= 1) {
-      lines.push(formatCoverageNoteForSlack(coverageNote));
-      lines.push('');
+      const domain = workflowSummaries[0]?.domain || getReportTitle().replace(/\s+Coverage Report$/i, '');
+      lines.push(
+        ...buildModuleBreakdownLines(domain, byDomain[domain] || [], coverageNote, {
+          includeHeader: true,
+          environment,
+          githubRunUrl,
+        }),
+      );
     } else {
       for (const { domain } of workflowSummaries) {
         lines.push(...buildModuleBreakdownLines(domain, byDomain[domain] || [], ''));
