@@ -18,8 +18,30 @@ test.describe('@inventory Inventory Management API', () => {
   });
 
   test.describe('Geofences', () => {
-    test('creates, fetches and deletes a geofence', async ({ inventoryManagementFlows }) => {
+    test.describe.configure({ mode: 'serial' });
+
+    test('creates, fetches, updates and deletes a geofence', async ({ inventoryManagementFlows }) => {
       await inventoryManagementFlows.geofenceCrud();
+    });
+
+    test('lists and filters geofences', async ({ inventoryManagementFlows }) => {
+      await inventoryManagementFlows.listGeofences();
+    });
+
+    test('rejects overlapping geofences within the same warehouse', async ({ inventoryManagementFlows }) => {
+      await inventoryManagementFlows.overlapWithinWarehouse();
+    });
+
+    test('rejects overlapping geofences across warehouses', async ({ inventoryManagementFlows }) => {
+      await inventoryManagementFlows.overlapAcrossWarehouses();
+    });
+
+    test('rejects overlapping geofence updates and preserves original state', async ({ inventoryManagementFlows }) => {
+      await inventoryManagementFlows.overlapOnUpdate();
+    });
+
+    test('deactivates a geofence', async ({ inventoryManagementFlows }) => {
+      await inventoryManagementFlows.deactivateGeofence();
     });
   });
 
@@ -32,6 +54,14 @@ test.describe('@inventory Inventory Management API', () => {
   test.describe('Edge cases', () => {
     test('returns 4xx when creating a warehouse with missing fields', async ({ inventoryManagementFlows }) => {
       await inventoryManagementFlows.warehouseMissingFields();
+    });
+
+    test('returns 4xx when creating a geofence without a warehouse', async ({ inventoryManagementFlows }) => {
+      await inventoryManagementFlows.geofenceMissingWarehouse();
+    });
+
+    test('returns 4xx when creating a geofence with an invalid warehouse', async ({ inventoryManagementFlows }) => {
+      await inventoryManagementFlows.geofenceInvalidWarehouse();
     });
 
     test('returns 4xx when resolving location with out-of-range coordinates', async ({ inventoryManagementFlows }) => {
