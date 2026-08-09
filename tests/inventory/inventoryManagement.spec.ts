@@ -68,4 +68,18 @@ test.describe('@inventory Inventory Management API', () => {
       await inventoryManagementFlows.resolveLocationOutOfRange();
     });
   });
+
+  test.describe('Yet to be implemented - geofence coverage gaps', () => {
+    test.skip('allows adjacent non-overlapping geofences in the same warehouse', async () => {});
+
+    test.skip('rejects geofence creation for inactive warehouses', async () => {});
+
+    test.skip('rejects malformed geofence polygons', async () => {});
+
+    test.skip('rejects geofence creation with invalid coordinates', async () => {});
+
+    test.skip('supports replacement geofences when deleting or deactivating', async () => {});
+
+    test.skip('verifies customer auto-assignment side effects after geofence changes', async () => {});
+  });
 });
