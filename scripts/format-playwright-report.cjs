@@ -606,6 +606,10 @@ function sortWorkflowSummaries(summaries) {
 }
 
 function buildSlackMarkdown(report) {
+  return buildSlackMessageParts(report).fullText;
+}
+
+function buildSlackMessageParts(report) {
   const tests = flattenTests(report.suites || []).map(normalizeResult);
   const byDomain = groupByDomain(tests);
   const totals = summarizeTests(tests);
@@ -621,88 +625,158 @@ function buildSlackMarkdown(report) {
     })),
   );
 
-  const lines = [];
-  lines.push(`🧪 *${getReportTitle()}*`);
-  lines.push(`Date: *${getTodayLabel()}*`);
+  const summaryLines = [];
+  summaryLines.push(`🧪 *${getReportTitle()}*`);
+  summaryLines.push(`Date: *${getTodayLabel()}*`);
   if (environment) {
-    lines.push(`Environment: *${environment}*`);
+    summaryLines.push(`Environment: *${environment}*`);
   }
   if (githubRunUrl) {
-    lines.push(`Build: <${githubRunUrl}|View GitHub run>`);
+    summaryLines.push(`Build: <${githubRunUrl}|View GitHub run>`);
   }
-  lines.push(
+  summaryLines.push(
     `✅ *${totals.passed}*  ❌ *${totals.failed}*  ⏩ *${totals.skipped}*  🟡 *${totals.flaky}*  Total: *${totals.total}*`,
   );
-  lines.push('');
+  summaryLines.push('');
 
+  const threadMessages = [];
   if (reportLayout === 'full-run') {
-    lines.push(...buildModuleSummaryTableLines(workflowSummaries, totals));
-    lines.push('');
-    lines.push(...buildOverallSummaryLines(totals));
-    lines.push('');
-    lines.push('*Module breakdown:*');
+    summaryLines.push(...buildModuleSummaryTableLines(workflowSummaries, totals));
+    summaryLines.push('');
+    summaryLines.push(...buildOverallSummaryLines(totals));
+    summaryLines.push('');
     for (const { domain } of workflowSummaries) {
-      lines.push(
-        ...buildModuleBreakdownLines(domain, byDomain[domain] || [], '', {
+      threadMessages.push(
+        buildModuleBreakdownLines(domain, byDomain[domain] || [], '', {
           includeHeader: true,
           environment,
           githubRunUrl,
-        }),
+        }).join('\n').trim(),
       );
     }
   } else {
-    lines.push(...buildServiceSummaryLines(workflowSummaries, totals));
-    lines.push('');
-    lines.push('*Module breakdown:*');
+    summaryLines.push(...buildServiceSummaryLines(workflowSummaries, totals));
+    summaryLines.push('');
     if (coverageNote && workflowSummaries.length <= 1) {
       const domain = workflowSummaries[0]?.domain || getReportTitle().replace(/\s+Coverage Report$/i, '');
-      lines.push(
-        ...buildModuleBreakdownLines(domain, byDomain[domain] || [], coverageNote, {
+      threadMessages.push(
+        buildModuleBreakdownLines(domain, byDomain[domain] || [], coverageNote, {
           includeHeader: true,
           environment,
           githubRunUrl,
-        }),
+        }).join('\n').trim(),
       );
     } else {
       for (const { domain } of workflowSummaries) {
-        lines.push(...buildModuleBreakdownLines(domain, byDomain[domain] || [], ''));
+        threadMessages.push(buildModuleBreakdownLines(domain, byDomain[domain] || [], '').join('\n').trim());
       }
     }
   }
 
   if (githubRunUrl) {
-    lines.push(`*Logs:* <${githubRunUrl}|View GitHub run>`);
+    summaryLines.push(`*Logs:* <${githubRunUrl}|View GitHub run>`);
   }
 
-  return lines.join('\n').trim();
+  const summaryText = summaryLines.join('\n').trim();
+  const fallbackThreadText = threadMessages.filter(Boolean).join('\n\n').trim();
+  const fullText = [summaryText, fallbackThreadText].filter(Boolean).join('\n\n').trim();
+
+  return {
+    summaryText,
+    threadMessages: threadMessages.filter(Boolean),
+    fullText,
+  };
 }
 
-async function postToSlack(webhookUrl, markdown) {
-  const response = await fetch(webhookUrl, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ text: markdown }),
-  });
+async function postSlackMessage({ webhookUrl = '', botToken = '', channelId = '', text = '', threadTs = '' }) {
+  if (botToken && channelId) {
+    const response = await fetch('https://slack.com/api/chat.postMessage', {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${botToken}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        channel: channelId,
+        text,
+        thread_ts: threadTs || undefined,
+        mrkdwn: true,
+      }),
+    });
 
-  if (!response.ok) {
-    throw new Error(`Slack webhook request failed with ${response.status} ${response.statusText}`);
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || !payload.ok) {
+      const errorMessage = payload?.error ? `${response.status} ${response.statusText} (${payload.error})` : `${response.status} ${response.statusText}`;
+      throw new Error(`Slack API request failed with ${errorMessage}`);
+    }
+
+    return payload.ts || '';
   }
+
+  if (webhookUrl) {
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Slack webhook request failed with ${response.status} ${response.statusText}`);
+    }
+
+    return '';
+  }
+
+  throw new Error('No Slack delivery configured. Set SLACK_BOT_TOKEN + SLACK_CHANNEL_ID or SLACK_WEBHOOK_URL.');
+}
+
+async function postSlackReport(report, parts = buildSlackMessageParts(report)) {
+  const slackWebhookUrl = process.env.SLACK_WEBHOOK_URL?.trim() || '';
+  const slackBotToken = process.env.SLACK_BOT_TOKEN?.trim() || '';
+  const slackChannelId = process.env.SLACK_CHANNEL_ID?.trim() || '';
+  const { summaryText, threadMessages, fullText } = parts;
+
+  if (slackBotToken && slackChannelId) {
+    const threadTs = await postSlackMessage({
+      botToken: slackBotToken,
+      channelId: slackChannelId,
+      text: summaryText,
+    });
+
+    for (const message of threadMessages) {
+      await postSlackMessage({
+        botToken: slackBotToken,
+        channelId: slackChannelId,
+        text: message,
+        threadTs,
+      });
+    }
+
+    return;
+  }
+
+  await postSlackMessage({
+    webhookUrl: slackWebhookUrl,
+    text: fullText,
+  });
 }
 
 async function main() {
   const reportPath = process.argv[2] || process.env.PLAYWRIGHT_JSON_REPORT || 'test-results/playwright-report.json';
-  const slackWebhookUrl = process.env.SLACK_WEBHOOK_URL?.trim() || '';
 
   if (!fs.existsSync(reportPath)) {
     throw new Error(`Playwright JSON report not found at ${reportPath}`);
   }
 
   const report = readJson(reportPath);
-  const markdown = buildSlackMarkdown(report);
-  console.log(markdown);
+  const parts = buildSlackMessageParts(report);
+  console.log(parts.fullText);
 
-  if (slackWebhookUrl) {
-    await postToSlack(slackWebhookUrl, markdown);
+  if (process.env.SLACK_BOT_TOKEN?.trim() && process.env.SLACK_CHANNEL_ID?.trim()) {
+    await postSlackReport(report, parts);
+    console.log('Slack notification sent.');
+  } else if (process.env.SLACK_WEBHOOK_URL?.trim()) {
+    await postSlackReport(report, parts);
     console.log('Slack notification sent.');
   } else {
     console.log('SLACK_WEBHOOK_URL not set; skipped Slack delivery.');
