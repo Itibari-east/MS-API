@@ -525,11 +525,9 @@ function buildServiceSummaryLines(workflowSummaries, totals) {
 }
 
 function formatTestBullets(tests) {
-  return formatCodeBlock(
-    tests.length
-      ? tests.map((test) => `- ${formatTestTitle(test)}${test.file ? ` (${formatTestLocation(test)})` : ''}`)
-      : ['- None'],
-  );
+  return tests.length
+    ? tests.map((test) => `- ${formatTestTitle(test)}${test.file ? ` (${formatTestLocation(test)})` : ''}`)
+    : ['- None'];
 }
 
 function buildModuleHeaderLines(domain, summary, environment, githubRunUrl) {
@@ -657,8 +655,14 @@ function buildSlackMarkdown(report) {
     lines.push('');
     lines.push('*Module breakdown:*');
     if (coverageNote && workflowSummaries.length <= 1) {
-      lines.push(formatCoverageNoteForSlack(coverageNote));
-      lines.push('');
+      const domain = workflowSummaries[0]?.domain || getReportTitle().replace(/\s+Coverage Report$/i, '');
+      lines.push(
+        ...buildModuleBreakdownLines(domain, byDomain[domain] || [], coverageNote, {
+          includeHeader: true,
+          environment,
+          githubRunUrl,
+        }),
+      );
     } else {
       for (const { domain } of workflowSummaries) {
         lines.push(...buildModuleBreakdownLines(domain, byDomain[domain] || [], ''));
