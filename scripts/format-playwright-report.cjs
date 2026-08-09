@@ -464,6 +464,49 @@ function buildModuleSummaryTableLines(workflowSummaries, totals) {
   return lines;
 }
 
+function buildModuleSummaryTableOnlyLines(workflowSummaries, totals) {
+  const rows = workflowSummaries.map(({ domain, summary }) => ({
+    module: summary.failed > 0 ? `❌ ${domain}` : summary.skipped > 0 ? `⚠️ ${domain}` : `✅ ${domain}`,
+    total: String(summary.total),
+    passed: String(summary.passed),
+    failed: String(summary.failed),
+    skipped: String(summary.skipped),
+    passRate: formatPassRate(summary.passed, summary.total),
+  }));
+
+  rows.push({
+    module: 'Overall',
+    total: String(totals.total),
+    passed: String(totals.passed),
+    failed: String(totals.failed),
+    skipped: String(totals.skipped),
+    passRate: formatPassRate(totals.passed, totals.total),
+  });
+
+  const headers = ['Module', 'Total', 'Passed', 'Failed', 'Skipped', 'Pass Rate'];
+  const widths = headers.map((header, index) =>
+    Math.max(
+      header.length,
+      ...rows.map((row) => String([row.module, row.total, row.passed, row.failed, row.skipped, row.passRate][index]).length),
+    ),
+  );
+
+  const formatRow = (cells) => cells.map((cell, index) => String(cell).padEnd(widths[index], ' ')).join('   ');
+  const separator = widths.map((width) => '-'.repeat(width)).join('   ');
+
+  const lines = [];
+  lines.push('*Module Summary*');
+  lines.push('```');
+  lines.push(formatRow(headers));
+  lines.push(separator);
+  for (const row of rows) {
+    lines.push(formatRow([row.module, row.total, row.passed, row.failed, row.skipped, row.passRate]));
+  }
+  lines.push('```');
+
+  return lines;
+}
+
 function buildOverallSummaryLines(totals) {
   const lines = [];
   lines.push('*Full Test Run Summary*');
@@ -473,11 +516,11 @@ function buildOverallSummaryLines(totals) {
   return lines;
 }
 
-function buildExecutiveSummaryLines(workflowSummaries, totals) {
+function buildServiceSummaryLines(workflowSummaries, totals) {
   const lines = [];
-  lines.push(...buildOverallSummaryLines(totals));
+  lines.push(`Overall Pass Rate: *${formatPassRate(totals.passed, totals.total)}*`);
   lines.push('');
-  lines.push(...buildModuleSummaryTableLines(workflowSummaries, totals));
+  lines.push(...buildModuleSummaryTableOnlyLines(workflowSummaries, totals));
   return lines;
 }
 
@@ -581,6 +624,8 @@ function buildSlackMarkdown(report) {
       lines.push(...buildModuleBreakdownLines(domain, byDomain[domain] || [], ''));
     }
   } else {
+    lines.push(...buildServiceSummaryLines(workflowSummaries, totals));
+    lines.push('');
     lines.push('*Module breakdown:*');
     if (coverageNote && workflowSummaries.length <= 1) {
       lines.push(formatCoverageNoteForSlack(coverageNote));
@@ -590,9 +635,6 @@ function buildSlackMarkdown(report) {
         lines.push(...buildModuleBreakdownLines(domain, byDomain[domain] || [], ''));
       }
     }
-
-    lines.push('');
-    lines.push(...buildExecutiveSummaryLines(workflowSummaries, totals));
   }
 
   if (githubRunUrl) {
