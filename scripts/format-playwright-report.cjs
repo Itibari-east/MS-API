@@ -556,11 +556,6 @@ function buildSlackMarkdown(report) {
 
   if (reportLayout === 'full-run') {
     lines.push(...buildExecutiveSummaryLines(workflowSummaries, totals));
-    lines.push('');
-    lines.push('*Module breakdown:*');
-    for (const { domain } of workflowSummaries) {
-      lines.push(...buildModuleBreakdownLines(domain, byDomain[domain] || [], ''));
-    }
   } else {
     lines.push('*Module breakdown:*');
     if (coverageNote && workflowSummaries.length <= 1) {
