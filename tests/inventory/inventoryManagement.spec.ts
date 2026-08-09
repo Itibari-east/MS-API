@@ -1,5 +1,6 @@
 import { expect } from '@playwright/test';
 import test from '../../helpers/baseTests';
+import { getTokenOrSkip } from '../../helpers/testHelpers';
 
 test.describe('@inventory Inventory Management API', () => {
   test.describe('Warehouses', () => {
@@ -19,6 +20,16 @@ test.describe('@inventory Inventory Management API', () => {
 
   test.describe('Geofences', () => {
     test.describe.configure({ mode: 'serial' });
+
+    test.beforeEach(async ({ inventoryManagementFlows }) => {
+      const token = getTokenOrSkip();
+      await inventoryManagementFlows.prepareGeofenceBranchSetup(token);
+    });
+
+    test.afterEach(async ({ inventoryManagementFlows }) => {
+      const token = getTokenOrSkip();
+      await inventoryManagementFlows.cleanupGeofenceBranchSetup(token);
+    });
 
     test('creates, fetches, updates and deletes a geofence', async ({ inventoryManagementFlows }) => {
       await inventoryManagementFlows.geofenceCrud();

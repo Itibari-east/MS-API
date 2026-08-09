@@ -22,6 +22,13 @@ type GeofenceInput = {
   maxAreaSqKm?: number;
 };
 
+type BranchSetup = {
+  regionPublicId: string;
+  country: CreatedEntity;
+  city: CreatedEntity;
+  branch: CreatedEntity;
+};
+
 function buildSquareGeoJson(centerLat: number, centerLon: number, delta = 0.01): GeoJsonPolygon {
   return {
     type: 'Polygon',
@@ -45,6 +52,8 @@ type GeofencePair = {
 };
 
 export class _InventoryManagementFlows {
+  private branchSetup?: BranchSetup;
+
   constructor(
     private readonly inventoryManagement: _InventoryManagementService,
     private readonly userManagement: _UserManagementService,
@@ -79,6 +88,69 @@ export class _InventoryManagementFlows {
     const warehousePublicId = firstContentPublicId(await json(warehousesRes));
     test.skip(!warehousePublicId, 'requires at least one warehouse');
     return warehousePublicId;
+  }
+
+  private async createCountry(token: string, prefix: string): Promise<CreatedEntity> {
+    const name = unique(prefix);
+    const response = await this.userManagement.createCountry(token, {
+      name,
+      code: `AC${Date.now()}${Math.random()}`.slice(-6).toUpperCase(),
+      currency: 'TZS',
+    });
+    expect([200, 201]).toContain(response.status());
+    return { name, publicId: publicIdFrom(await json(response)) };
+  }
+
+  private async createCity(token: string, countryPublicId: string, prefix: string): Promise<CreatedEntity> {
+    const name = unique(prefix);
+    const response = await this.userManagement.createCity(token, {
+      name,
+      code: `CT${Date.now()}${Math.random()}`.slice(-6).toUpperCase(),
+      countryPublicId,
+    });
+    expect([200, 201]).toContain(response.status());
+    return { name, publicId: publicIdFrom(await json(response)) };
+  }
+
+  private async createBranch(token: string, cityPublicId: string, regionPublicId: string, prefix: string): Promise<CreatedEntity> {
+    const name = unique(prefix);
+    const response = await this.userManagement.createBranch(token, {
+      name,
+      description: 'Created by API automation',
+      cityPublicIds: [cityPublicId],
+      regionId: regionPublicId,
+    });
+    expect([200, 201]).toContain(response.status());
+    return { name, publicId: publicIdFrom(await json(response)) };
+  }
+
+  private async deleteAllowed(responsePromise: Promise<{ status(): number }>, allowedStatuses: number[]) {
+    const response = await responsePromise;
+    expect(allowedStatuses).toContain(response.status());
+  }
+
+  private async createBranchSetup(token: string): Promise<BranchSetup> {
+    const regionPublicId = await this.getFirstRegionPublicId(token);
+    const country = await this.createCountry(token, 'Geofence Country');
+    const city = await this.createCity(token, country.publicId, 'Geofence City');
+    const branch = await this.createBranch(token, city.publicId, regionPublicId, 'Geofence Branch');
+    return { regionPublicId, country, city, branch };
+  }
+
+  async prepareGeofenceBranchSetup(token: string) {
+    this.branchSetup = await this.createBranchSetup(token);
+    return this.branchSetup;
+  }
+
+  async cleanupGeofenceBranchSetup(token: string) {
+    if (!this.branchSetup) {
+      return;
+    }
+
+    await this.deleteAllowed(this.userManagement.deleteBranch(token, this.branchSetup.branch.publicId), [204, 404]);
+    await this.deleteAllowed(this.userManagement.deleteCity(token, this.branchSetup.city.publicId), [204, 404]);
+    await this.deleteAllowed(this.userManagement.deleteCountry(token, this.branchSetup.country.publicId), [204, 404]);
+    this.branchSetup = undefined;
   }
 
   private async createWarehouse(token: string, regionPublicId: string, prefix: string): Promise<CreatedEntity> {
@@ -128,9 +200,12 @@ export class _InventoryManagementFlows {
   }
 
   private buildGeofencePayload(regionPublicId: string, warehousePublicId: string, input: GeofenceInput = {}) {
+    const branchDescription =
+      this.branchSetup ? `Created by API automation for branch ${this.branchSetup.branch.name}` : 'Created by API automation';
+
     return {
       name: input.name ?? unique('QA Geofence'),
-      description: input.description ?? 'Created by API automation',
+      description: input.description ?? branchDescription,
       geoJson: input.geoJson ?? buildSquareGeoJson(-6.3 + Math.random() * 0.3, 39.0 + Math.random() * 0.3),
       priority: input.priority ?? 1,
       regionPublicId,
