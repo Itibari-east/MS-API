@@ -37,6 +37,13 @@ function buildSquareGeoJson(centerLat: number, centerLon: number, delta = 0.01):
   };
 }
 
+type GeofencePair = {
+  regionPublicId: string;
+  warehouse: CreatedEntity;
+  source: CreatedEntity;
+  replacement: CreatedEntity;
+};
+
 export class _InventoryManagementFlows {
   constructor(
     private readonly inventoryManagement: _InventoryManagementService,
@@ -98,6 +105,26 @@ export class _InventoryManagementFlows {
     });
     expect([200, 201]).toContain(response.status());
     return response;
+  }
+
+  private async createGeofencePair(
+    token: string,
+    warehousePrefix: string,
+    sourcePrefix: string,
+    replacementPrefix: string,
+  ): Promise<GeofencePair> {
+    const regionPublicId = await this.getFreeRegionPublicId(token);
+    const warehouse = await this.createWarehouse(token, regionPublicId, warehousePrefix);
+    const source = await this.createGeofence(token, regionPublicId, warehouse.publicId, {
+      name: unique(sourcePrefix),
+      geoJson: buildSquareGeoJson(-6.34, 39.04, 0.02),
+    });
+    const replacement = await this.createGeofence(token, regionPublicId, warehouse.publicId, {
+      name: unique(replacementPrefix),
+      geoJson: buildSquareGeoJson(-6.28, 39.12, 0.02),
+    });
+
+    return { regionPublicId, warehouse, source, replacement };
   }
 
   private buildGeofencePayload(regionPublicId: string, warehousePublicId: string, input: GeofenceInput = {}) {
@@ -351,6 +378,60 @@ export class _InventoryManagementFlows {
     if (Object.prototype.hasOwnProperty.call(detail, 'status')) {
       expect(String(detail.status).toLowerCase()).toContain('inactive');
     }
+  }
+
+  async deleteGeofenceWithReplacement() {
+    const token = getTokenOrSkip();
+    const { warehouse, source, replacement } = await this.createGeofencePair(
+      token,
+      'QA Warehouse Replacement Delete',
+      'QA Geofence Delete Source',
+      'QA Geofence Delete Replacement',
+    );
+
+    const deleteRes = await this.inventoryManagement.deleteGeofence(token, source.publicId, replacement.publicId);
+    expect([200, 204]).toContain(deleteRes.status());
+
+    const sourceRes = await this.inventoryManagement.getGeofence(token, source.publicId);
+    expect([400, 404]).toContain(sourceRes.status());
+
+    const replacementRes = await this.inventoryManagement.getGeofence(token, replacement.publicId);
+    expect(replacementRes.status()).toBe(200);
+    expect(await json(replacementRes)).toHaveProperty('publicId', replacement.publicId);
+
+    await this.inventoryManagement.deleteGeofence(token, replacement.publicId);
+    await this.inventoryManagement.deleteWarehouse(token, warehouse.publicId);
+  }
+
+  async deactivateGeofenceWithReplacement() {
+    const token = getTokenOrSkip();
+    const { warehouse, source, replacement } = await this.createGeofencePair(
+      token,
+      'QA Warehouse Replacement Deactivate',
+      'QA Geofence Deactivate Source',
+      'QA Geofence Deactivate Replacement',
+    );
+
+    const deactivateRes = await this.inventoryManagement.deactivateGeofence(token, source.publicId, replacement.publicId);
+    expect([200, 204]).toContain(deactivateRes.status());
+
+    const sourceRes = await this.inventoryManagement.getGeofence(token, source.publicId);
+    expect(sourceRes.status()).toBe(200);
+    const sourceBody = await json(sourceRes);
+    if (Object.prototype.hasOwnProperty.call(sourceBody, 'active')) {
+      expect(sourceBody.active).toBeFalsy();
+    }
+    if (Object.prototype.hasOwnProperty.call(sourceBody, 'status')) {
+      expect(String(sourceBody.status).toLowerCase()).toContain('inactive');
+    }
+
+    const replacementRes = await this.inventoryManagement.getGeofence(token, replacement.publicId);
+    expect(replacementRes.status()).toBe(200);
+    expect(await json(replacementRes)).toHaveProperty('publicId', replacement.publicId);
+
+    await this.inventoryManagement.deleteGeofence(token, replacement.publicId);
+    await this.inventoryManagement.deleteGeofence(token, source.publicId);
+    await this.inventoryManagement.deleteWarehouse(token, warehouse.publicId);
   }
 
   async geofenceAdjacentNonOverlapping() {

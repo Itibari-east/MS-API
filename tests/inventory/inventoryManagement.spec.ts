@@ -43,6 +43,14 @@ test.describe('@inventory Inventory Management API', () => {
     test('deactivates a geofence', async ({ inventoryManagementFlows }) => {
       await inventoryManagementFlows.deactivateGeofence();
     });
+
+    test('deletes a geofence using a replacement geofence', async ({ inventoryManagementFlows }) => {
+      await inventoryManagementFlows.deleteGeofenceWithReplacement();
+    });
+
+    test('deactivates a geofence using a replacement geofence', async ({ inventoryManagementFlows }) => {
+      await inventoryManagementFlows.deactivateGeofenceWithReplacement();
+    });
   });
 
   test.describe('Location Resolution', () => {
