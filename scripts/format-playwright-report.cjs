@@ -532,13 +532,36 @@ function formatTestBullets(tests) {
   );
 }
 
-function buildModuleBreakdownLines(domain, tests, coverageNote) {
+function buildModuleHeaderLines(domain, summary, environment, githubRunUrl) {
+  const lines = [];
+  lines.push(`🧪 *${domain} API Coverage Report*`);
+  lines.push(`Date: *${getTodayLabel()}*`);
+  if (environment) {
+    lines.push(`Environment: *${environment}*`);
+  }
+  if (githubRunUrl) {
+    lines.push(`Build: <${githubRunUrl}|View GitHub run>`);
+  }
+  lines.push(
+    `✅ *${summary.passed}*  ❌ *${summary.failed}*  ⏭️ *${summary.skipped}*  🟡 *${summary.flaky || 0}*  Total: *${summary.total}*`,
+  );
+
+  return lines;
+}
+
+function buildModuleBreakdownLines(domain, tests, coverageNote, options = {}) {
+  const { includeHeader = false, environment = '', githubRunUrl = '' } = options;
   const coveredTests = tests.filter((test) => test.status === 'passed');
   const failedTests = tests.filter((test) => test.status === 'failed');
   const skippedTests = tests.filter((test) => test.status === 'skipped');
   const expectedFailures = tests.filter((test) => test.expectedStatus === 'failed');
+  const summary = summarizeTests(tests);
 
   const lines = [];
+  if (includeHeader) {
+    lines.push(...buildModuleHeaderLines(domain, summary, environment, githubRunUrl));
+    lines.push('');
+  }
   lines.push(`*${domain}*`);
 
   if (coverageNote) {
@@ -621,7 +644,13 @@ function buildSlackMarkdown(report) {
     lines.push('');
     lines.push('*Module breakdown:*');
     for (const { domain } of workflowSummaries) {
-      lines.push(...buildModuleBreakdownLines(domain, byDomain[domain] || [], ''));
+      lines.push(
+        ...buildModuleBreakdownLines(domain, byDomain[domain] || [], '', {
+          includeHeader: true,
+          environment,
+          githubRunUrl,
+        }),
+      );
     }
   } else {
     lines.push(...buildServiceSummaryLines(workflowSummaries, totals));
