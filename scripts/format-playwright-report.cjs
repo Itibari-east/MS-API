@@ -28,6 +28,20 @@ function getGitHubRunUrl() {
   return `${serverUrl}/${repository}/actions/runs/${runId}`;
 }
 
+function getReportTitle() {
+  const explicitTitle = process.env.PLAYWRIGHT_REPORT_TITLE?.trim();
+  if (explicitTitle) {
+    return explicitTitle;
+  }
+
+  const moduleName = process.env.PLAYWRIGHT_MODULE_NAME?.trim() || 'Playwright API';
+  return `${moduleName} Coverage Report`;
+}
+
+function getReportLayout() {
+  return process.env.PLAYWRIGHT_REPORT_LAYOUT?.trim().toLowerCase() || 'service';
+}
+
 function getTodayLabel() {
   return new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Africa/Dar_es_Salaam',
@@ -514,10 +528,10 @@ function buildSlackMarkdown(report) {
   const tests = flattenTests(report.suites || []).map(normalizeResult);
   const byDomain = groupByDomain(tests);
   const totals = summarizeTests(tests);
-  const moduleName = process.env.PLAYWRIGHT_MODULE_NAME?.trim() || 'Playwright API';
   const environment = process.env.PLAYWRIGHT_ENVIRONMENT?.trim() || '';
   const githubRunUrl = getGitHubRunUrl();
-  const coverageNotePath = resolveCoverageNotePath();
+  const reportLayout = getReportLayout();
+  const coverageNotePath = reportLayout === 'service' ? resolveCoverageNotePath() : '';
   const coverageNote = readTextFile(coverageNotePath);
   const workflowSummaries = sortWorkflowSummaries(
     Object.keys(byDomain).map((domain) => ({
@@ -527,7 +541,7 @@ function buildSlackMarkdown(report) {
   );
 
   const lines = [];
-  lines.push(`🧪 *${moduleName} Coverage Report*`);
+  lines.push(`🧪 *${getReportTitle()}*`);
   lines.push(`Date: *${getTodayLabel()}*`);
   if (environment) {
     lines.push(`Environment: *${environment}*`);
@@ -540,22 +554,31 @@ function buildSlackMarkdown(report) {
   );
   lines.push('');
 
-  lines.push('*Module breakdown:*');
-  if (coverageNote && workflowSummaries.length <= 1) {
-    lines.push(formatCoverageNoteForSlack(coverageNote));
+  if (reportLayout === 'full-run') {
+    lines.push(...buildExecutiveSummaryLines(workflowSummaries, totals));
     lines.push('');
-  } else {
+    lines.push('*Module breakdown:*');
     for (const { domain } of workflowSummaries) {
       lines.push(...buildModuleBreakdownLines(domain, byDomain[domain] || [], ''));
     }
+  } else {
+    lines.push('*Module breakdown:*');
+    if (coverageNote && workflowSummaries.length <= 1) {
+      lines.push(formatCoverageNoteForSlack(coverageNote));
+      lines.push('');
+    } else {
+      for (const { domain } of workflowSummaries) {
+        lines.push(...buildModuleBreakdownLines(domain, byDomain[domain] || [], ''));
+      }
+    }
+
+    lines.push('');
+    lines.push(...buildExecutiveSummaryLines(workflowSummaries, totals));
   }
 
   if (githubRunUrl) {
     lines.push(`*Logs:* <${githubRunUrl}|View GitHub run>`);
   }
-
-  lines.push('');
-  lines.push(...buildExecutiveSummaryLines(workflowSummaries, totals));
 
   return lines.join('\n').trim();
 }
