@@ -569,7 +569,7 @@ function buildModuleBreakdownLines(domain, tests, coverageNote, options = {}) {
   }
 
   lines.push(formatSectionHeading('Covered'));
-  lines.push(...formatTestBullets(coveredTests));
+  lines.push(...formatCodeBlock(formatTestBullets(coveredTests)));
   lines.push('');
 
   lines.push(formatSectionHeading('Failed'));
