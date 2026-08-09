@@ -167,9 +167,3 @@ export async function expectBranchListed(
     bankPublicId,
   });
 }
-
-export function requireSupplierPublicId(): string {
-  const supplierPublicId = process.env.MS_SUPPLIER_PUBLIC_ID?.trim() ?? '';
-  test.skip(!supplierPublicId, 'MS_SUPPLIER_PUBLIC_ID is required to run supplier bank-account coverage');
-  return supplierPublicId;
-}

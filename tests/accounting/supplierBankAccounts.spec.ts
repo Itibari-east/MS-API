@@ -1,22 +1,28 @@
 import { expect } from '@playwright/test';
 import test from '../../helpers/baseTests';
 import { getTokenOrSkip } from '../../helpers/testHelpers';
-import { expectStatuses, requireSupplierPublicId } from '../../utils/accountingTestHelpers';
+import { expectStatuses } from '../../utils/accountingTestHelpers';
+import { createCompleteSupplier } from '../../helpers/supplierFactory';
 
 test.describe('@accounting Accounting Service - Supplier Bank Accounts', () => {
-  test('replaces supplier bank accounts', async ({ accountingService }) => {
+  test('replaces supplier bank accounts with valid supplier, bank, and branch data', async ({
+    accountingService,
+    supplierApi,
+  }) => {
     const token = getTokenOrSkip();
-    const supplierPublicId = requireSupplierPublicId();
+    const supplier = await createCompleteSupplier(supplierApi, accountingService, token, 'Supplier Bank Accounts');
+    expect(supplier.bank).toBeTruthy();
+    expect(supplier.branch).toBeTruthy();
 
     const response = await expectStatuses(
-      accountingService.replaceSupplierBankAccounts(token, supplierPublicId, {
+      accountingService.replaceSupplierBankAccounts(token, supplier.publicId, {
         accounts: [
           {
-            bankCode: 'CRDB',
-            branchCode: 'CRDB_ARU',
-            accountName: 'Acme Supplies Ltd',
-            accountNumber: '0150123456789',
-            swiftCode: 'CORUTZTZ',
+            bankCode: supplier.bank!.code,
+            branchCode: supplier.branch!.code,
+            accountName: supplier.name,
+            accountNumber: `${Date.now()}${Math.floor(Math.random() * 1000)}`,
+            swiftCode: supplier.bank!.swiftCode ?? 'CORUTZTZ',
           },
         ],
       }),
@@ -25,17 +31,7 @@ test.describe('@accounting Accounting Service - Supplier Bank Accounts', () => {
 
     const text = await response.text();
     expect(text).toBeTruthy();
-
-    try {
-      const body = JSON.parse(text);
-      if (Array.isArray(body)) {
-        expect(body[0]).toMatchObject({
-          bankCode: 'CRDB',
-          branchCode: 'CRDB_ARU',
-        });
-      }
-    } catch {
-      expect(text).toContain('CRDB');
-    }
+    expect(text).toContain(supplier.bank!.code);
+    expect(text).toContain(supplier.branch!.code);
   });
 });
