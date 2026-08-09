@@ -573,15 +573,15 @@ function buildModuleBreakdownLines(domain, tests, coverageNote, options = {}) {
   lines.push('');
 
   lines.push(formatSectionHeading('Failed'));
-  lines.push(...formatTestBullets(failedTests));
+  lines.push(...formatCodeBlock(formatTestBullets(failedTests)));
   lines.push('');
 
   lines.push(formatSectionHeading('Skipped'));
-  lines.push(...formatTestBullets(skippedTests));
+  lines.push(...formatCodeBlock(formatTestBullets(skippedTests)));
   lines.push('');
 
   lines.push(formatSectionHeading('Expected Failures'));
-  lines.push(...formatTestBullets(expectedFailures));
+  lines.push(...formatCodeBlock(formatTestBullets(expectedFailures)));
   lines.push('');
 
   lines.push(formatSectionHeading('Missing Coverage'));
