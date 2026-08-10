@@ -11,6 +11,7 @@ interface Config {
     inventoryManagement: string;
     accountingService: string;
     commercials: string;
+    documentService: string;
   };
   email: string;
   password: string;
@@ -26,6 +27,7 @@ let _config: Config = {
     inventoryManagement: '',
     accountingService: '',
     commercials: '',
+    documentService: '',
   },
   email: '',
   password: '',
@@ -46,6 +48,7 @@ if (ENV.toUpperCase() === DEV) {
         inventoryManagement: joinUrl(prodBaseUrl, 'inventory-management-service'),
         accountingService: joinUrl(prodBaseUrl, 'accounting-service'),
         commercials: joinUrl(prodBaseUrl, 'commercials-service'),
+        documentService: joinUrl(prodBaseUrl),
       },
       email: process.env.MS_USER_EMAIL || 'd.chirchir@itibari.io',
       password: process.env.MS_USER_PASSWORD || 'Silot777@',
