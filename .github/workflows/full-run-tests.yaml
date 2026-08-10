@@ -62,7 +62,7 @@ jobs:
   publish-final-summary:
     name: Publish full run summary
     runs-on: ubuntu-latest
-    if: always()
+    if: always() && github.event_name == 'push'
     needs: run-playwright-tests
     env:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
