@@ -150,8 +150,10 @@ The full run workflow:
 
 - runs all module shards
 - merges the blob reports
-- publishes the Slack summary only on `push` to `main`
+- publishes the Slack summary on `push` to `main` and on the hourly schedule
 - still runs tests on pull requests, but does not post Slack updates there
+
+The hourly schedule is configured on the full run workflow with a cron of `0 * * * *`.
 
 That keeps PRs quiet while preserving the main-branch release summary.
 
