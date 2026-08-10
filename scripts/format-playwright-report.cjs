@@ -73,6 +73,7 @@ function getDomainFromFile(fileName) {
     auth: 'Auth',
     accounting: 'Accounting',
     commercials: 'Commercials',
+    document: 'Document Service',
     inventory: 'Inventory',
     suppliers: 'Supplier',
     supplier: 'Supplier',
@@ -117,6 +118,7 @@ function formatCodeBlock(lines) {
 function getCoveragePrefix() {
   const moduleName = String(process.env.PLAYWRIGHT_MODULE_NAME || '').toLowerCase();
   if (moduleName.includes('auth')) return 'login';
+  if (moduleName.includes('document')) return 'document';
   if (moduleName.includes('supplier')) return 'supplier';
   if (moduleName.includes('user')) return 'user';
   if (moduleName.includes('commercial')) return 'commercial';
@@ -194,6 +196,7 @@ function getEndpointLabelFromSuiteTitles(suiteTitles = [], fileName = '') {
 
   const normalizedFile = path.basename(fileName || '').toLowerCase();
   if (normalizedFile === 'auth.spec.ts') return 'login';
+  if (normalizedFile === 'document.spec.ts') return 'document';
   if (normalizedFile.includes('supplier')) return 'supplier';
   if (normalizedFile.includes('user')) return 'user';
 
