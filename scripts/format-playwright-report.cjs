@@ -521,7 +521,7 @@ function formatTestBullets(tests) {
 
 function buildModuleHeaderLines(domain, summary, environment, githubRunUrl) {
   const lines = [];
-  lines.push(`🧪 *${domain} API Coverage Report*`);
+  lines.push(`*${domain} API Coverage Report*`);
   lines.push(`Date: *${getTodayLabel()}*`);
   if (environment) {
     lines.push(`Environment: *${environment}*`);
@@ -615,7 +615,7 @@ function buildSlackMessageParts(report) {
   );
 
   const summaryLines = [];
-  summaryLines.push(`🧪 *${getReportTitle()}*`);
+  summaryLines.push(`*${getReportTitle()}*`);
   summaryLines.push(`Date: *${getTodayLabel()}*`);
   if (environment) {
     summaryLines.push(`Environment: *${environment}*`);
@@ -623,9 +623,6 @@ function buildSlackMessageParts(report) {
   if (githubRunUrl) {
     summaryLines.push(`Build: <${githubRunUrl}|View GitHub run>`);
   }
-  summaryLines.push(
-    `✅ *${totals.passed}*  ❌ *${totals.failed}*  ⏩ *${totals.skipped}*  🟡 *${totals.flaky}*  Total: *${totals.total}*`,
-  );
   summaryLines.push('');
 
   const threadMessages = [];
