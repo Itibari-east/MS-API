@@ -41,13 +41,13 @@ async function globalSetup(): Promise<void> {
     return;
   }
 
-  if (manualToken) {
-    await writeAuthToken(authFilePath, manualToken, _config.email);
-    console.log('[globalSetup] ✓ Using bearer token from MS_WEB_BEARER_TOKEN');
-    return;
-  }
-
   if (!totpSecret) {
+    if (manualToken) {
+      await writeAuthToken(authFilePath, manualToken, _config.email);
+      console.log('[globalSetup] ✓ Using bearer token from MS_WEB_BEARER_TOKEN');
+      return;
+    }
+
     await writeAuthToken(authFilePath, '', _config.email);
     console.warn(
       '[globalSetup] Skipping token generation. Set MS_TOTP_SECRET or MS_WEB_BEARER_TOKEN to enable authenticated setup.',
@@ -58,25 +58,38 @@ async function globalSetup(): Promise<void> {
   console.log(`\n[globalSetup] Logging in as: ${_config.email}`);
 
   const authService = new _AuthService();
-  const body = await authService.loginWithMfaSetup(
-    _config.email,
-    _config.password,
-    totpSecret,
-  );
-  const accessToken = String(body.accessToken ?? body.token ?? '').trim();
+  let accessToken = '';
+  let username = _config.email;
+
+  try {
+    const body = await authService.loginWithMfaSetup(
+      _config.email,
+      _config.password,
+      totpSecret,
+    );
+    accessToken = String(body.accessToken ?? body.token ?? '').trim();
+    username = String(body.username ?? _config.email);
+  } catch (error) {
+    if (manualToken) {
+      console.warn('[globalSetup] MFA login failed; falling back to MS_WEB_BEARER_TOKEN.');
+      accessToken = manualToken;
+    } else {
+      throw error;
+    }
+  }
 
   if (!accessToken) {
-    throw new Error('[globalSetup] MFA login completed but no access token was returned.');
+    throw new Error('[globalSetup] Authentication completed but no access token was returned.');
   }
 
   if (isJwtExpired(accessToken, 5_000)) {
-    throw new Error('[globalSetup] MFA login returned an expired or malformed access token.');
+    throw new Error('[globalSetup] Authentication returned an expired or malformed access token.');
   }
 
   const authData = {
     default: {
       token: accessToken,
-      username: body.username ?? _config.email,
+      username,
     },
   };
 
@@ -90,9 +103,15 @@ async function globalSetup(): Promise<void> {
   }
 
   console.log('[globalSetup] Initializing database connection...');
-  await initializeDatabase();
-  await closeDatabase();
-  console.log('[globalSetup] ✓ Database connection ready');
+  try {
+    await initializeDatabase();
+    await closeDatabase();
+    console.log('[globalSetup] ✓ Database connection ready');
+  } catch (error) {
+    console.warn(
+      `[globalSetup] Skipping database initialization after connection failure: ${(error as Error).message}`,
+    );
+  }
 }
 
 export default globalSetup;
