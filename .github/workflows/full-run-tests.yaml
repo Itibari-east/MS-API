@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    - cron: '0 * * * *'
   workflow_dispatch:
     inputs:
       environment:
@@ -68,7 +70,7 @@ jobs:
   publish-final-summary:
     name: Publish full run summary
     runs-on: ubuntu-latest
-    if: always() && github.event_name == 'push'
+    if: always() && (github.event_name == 'push' || github.event_name == 'schedule')
     needs: run-playwright-tests
     env:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
