@@ -88,6 +88,7 @@ Run a specific module by tag:
 npx playwright test --grep "@accounting"
 npx playwright test --grep "@supplier"
 npx playwright test --grep "@inventory"
+npx playwright test --grep "@document"
 ```
 
 Run specific tests by title text:
@@ -122,6 +123,7 @@ The repository has one workflow per module plus a full run workflow:
 - [.github/workflows/auth-tests.yaml](./.github/workflows/auth-tests.yaml)
 - [.github/workflows/accounting-tests.yaml](./.github/workflows/accounting-tests.yaml)
 - [.github/workflows/commercials-tests.yaml](./.github/workflows/commercials-tests.yaml)
+- [.github/workflows/document-tests.yaml](./.github/workflows/document-tests.yaml)
 - [.github/workflows/inventory-tests.yaml](./.github/workflows/inventory-tests.yaml)
 - [.github/workflows/supplier-tests.yaml](./.github/workflows/supplier-tests.yaml)
 - [.github/workflows/usermanagement-tests.yaml](./.github/workflows/usermanagement-tests.yaml)
@@ -155,6 +157,6 @@ That keeps PRs quiet while preserving the main-branch release summary.
 
 ## Useful notes
 
-- Tags such as `@auth`, `@accounting`, `@commercials`, `@inventory`, `@supplier`, and `@usermanagement` are used to target module runs.
+- Tags such as `@auth`, `@accounting`, `@commercials`, `@document`, `@inventory`, `@supplier`, and `@usermanagement` are used to target module runs.
 - The test suite is built around reusable services and helpers, so the same endpoint can be exercised from local runs, GitHub Actions, and Slack-reported CI runs.
 - If a run needs authenticated setup, make sure the auth variables are present before launching Playwright.
