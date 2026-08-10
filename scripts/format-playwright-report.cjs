@@ -507,19 +507,8 @@ function buildModuleSummaryTableOnlyLines(workflowSummaries, totals) {
   return lines;
 }
 
-function buildOverallSummaryLines(totals) {
-  const lines = [];
-  lines.push('*Full Test Run Summary*');
-  lines.push(`🟢 *${totals.passed}* Passed   🔴 *${totals.failed}* Failed   ⏭️ *${totals.skipped}* Skipped   Total: *${totals.total}*`);
-  lines.push(`Overall Pass Rate: *${formatPassRate(totals.passed, totals.total)}*`);
-
-  return lines;
-}
-
 function buildServiceSummaryLines(workflowSummaries, totals) {
   const lines = [];
-  lines.push(`Overall Pass Rate: *${formatPassRate(totals.passed, totals.total)}*`);
-  lines.push('');
   lines.push(...buildModuleSummaryTableOnlyLines(workflowSummaries, totals));
   return lines;
 }
@@ -642,8 +631,6 @@ function buildSlackMessageParts(report) {
   const threadMessages = [];
   if (reportLayout === 'full-run') {
     summaryLines.push(...buildModuleSummaryTableLines(workflowSummaries, totals));
-    summaryLines.push('');
-    summaryLines.push(...buildOverallSummaryLines(totals));
     summaryLines.push('');
     for (const { domain } of workflowSummaries) {
       threadMessages.push(
