@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { serviceConstants } from '../constants/endpoints';
 import { _DocumentService, DocumentFileUploadPayload } from '../services/document';
 import { json, unique } from '../helpers/testHelpers';
+import { getDocumentReferenceType } from './document';
 
 export type CreatedDocumentRule = {
   publicId: string;
@@ -123,7 +124,7 @@ export async function createUploadedDocument(
   const fileName = `${label.replace(/\s+/g, '-').toLowerCase()}.pdf`;
   const payload: DocumentFileUploadPayload = {
     referenceId,
-    referenceType: serviceConstants.document.referenceType.user,
+    referenceType: getDocumentReferenceType(),
     description,
     documentRulePublicId: rulePublicId,
     expiryDate: futureDate(60),
@@ -150,4 +151,3 @@ export async function createUploadedDocument(
     fileName,
   };
 }
-

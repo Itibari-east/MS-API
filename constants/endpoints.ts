@@ -1,3 +1,10 @@
+import {
+  DocumentEntitySubTypes,
+  DocumentEntityTypes,
+  DocumentReferenceTypes,
+  DocumentTypes,
+} from './document';
+
 export const endpoints = {
   auth: {
     login: '/login',
@@ -49,16 +56,16 @@ export const serviceConstants = {
   },
   document: {
     entityType: {
-      user: 'USER',
+      user: DocumentEntityTypes.USER,
     },
     entitySubType: {
-      profile: 'PROFILE',
+      profile: DocumentEntitySubTypes.PROFILE,
     },
     documentType: {
-      kycDocument: 'KYC_DOCUMENT',
+      kycDocument: DocumentTypes.KYC_DOCUMENT,
     },
     referenceType: {
-      user: 'USER',
+      user: DocumentReferenceTypes.USER,
     },
   },
   accounting: {
