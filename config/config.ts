@@ -1,8 +1,17 @@
-import 'dotenv/config';
+import fs from 'fs';
+import path from 'path';
+import dotenv from 'dotenv';
 import { DEV_BASE_URL, SERVICE_ENDPOINTS } from './dev';
 import { _prod } from './prod';
 import { _users } from './users';
 import { joinUrl, normalizeBaseUrl } from '../utils/url';
+
+for (const envPath of [path.resolve(__dirname, '../.env'), path.resolve(__dirname, '../../.env')]) {
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+    break;
+  }
+}
 
 interface Config {
   baseEndpoint: string;
@@ -48,7 +57,7 @@ if (ENV.toUpperCase() === DEV) {
         inventoryManagement: joinUrl(prodBaseUrl, 'inventory-management-service'),
         accountingService: joinUrl(prodBaseUrl, 'accounting-service'),
         commercials: joinUrl(prodBaseUrl, 'commercials-service'),
-        documentService: joinUrl(prodBaseUrl),
+        documentService: joinUrl(prodBaseUrl, 'document-service'),
       },
       email: process.env.MS_USER_EMAIL || 'd.chirchir@itibari.io',
       password: process.env.MS_USER_PASSWORD || 'Silot777@',
