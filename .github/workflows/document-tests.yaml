@@ -1,0 +1,105 @@
+name: Document Service Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target Env
+        type: choice
+        options: [PRODUCTION, DEV]
+        default: DEV
+      grep:
+        description: Optional Playwright grep regex. Matches test titles and @tags.
+        type: string
+        required: false
+        default: ""
+
+jobs:
+  run-playwright-tests:
+    uses: ./.github/workflows/itibari-reusable.yaml
+    with:
+      tag: "@document"
+      grep: ${{ inputs.grep }}
+      moduleName: "Document Service API"
+      moduleSlug: document
+      environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'DEV' }}
+      shardIndex: 1
+      shardTotal: 1
+      node-version: 20
+      use-cache: true
+    secrets:
+      MS_USER_EMAIL: ${{ secrets.MS_USER_EMAIL }}
+      MS_USER_PASSWORD: ${{ secrets.MS_USER_PASSWORD }}
+      MS_TOTP_SECRET: ${{ secrets.MS_TOTP_SECRET }}
+      MS_DEV_BASE_URL: ${{ secrets.MS_DEV_BASE_URL }}
+      GMAIL_CLIENT_ID: ${{ secrets.GMAIL_CLIENT_ID }}
+      GMAIL_CLIENT_SECRET: ${{ secrets.GMAIL_CLIENT_SECRET }}
+      GMAIL_TEST_EMAIL: ${{ secrets.GMAIL_TEST_EMAIL }}
+      GMAIL_REFRESH_TOKEN: ${{ secrets.GMAIL_REFRESH_TOKEN }}
+      GMAIL_ACCESS_TOKEN: ${{ secrets.GMAIL_ACCESS_TOKEN }}
+
+  publish-report:
+    name: Publish Document Service report
+    runs-on: ubuntu-latest
+    if: always()
+    needs: run-playwright-tests
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+      PLAYWRIGHT_MODULE_NAME: Document Service API
+      PLAYWRIGHT_ENVIRONMENT: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'DEV' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download shard artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: blob-report-document-*
+          path: all-blob-reports
+          merge-multiple: true
+
+      - name: Flatten blob report artifacts
+        run: |
+          find all-blob-reports -mindepth 2 -type f -name '*.zip' -exec mv -n {} all-blob-reports/ \;
+          find all-blob-reports -mindepth 1 -type d -empty -delete
+          if ! find all-blob-reports -maxdepth 1 -type f -name '*.zip' | grep -q .; then
+            echo "::error::No blob report zip files found in all-blob-reports"
+            find all-blob-reports -maxdepth 4 -print
+            exit 1
+          fi
+
+      - name: Verify Slack webhook
+        run: |
+          if [ -z "$SLACK_WEBHOOK_URL" ]; then
+            echo "::error::SLACK_WEBHOOK_URL is not available in this job"
+            exit 1
+          fi
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Merge Playwright reports
+        run: |
+          mkdir -p test-results
+          npx playwright merge-reports --reporter html ./all-blob-reports
+          npx playwright merge-reports --reporter json ./all-blob-reports > test-results/playwright-report.json
+
+      - name: Publish Slack summary
+        run: npm run report:slack -- test-results/playwright-report.json
+
+      - name: Upload merged report
+        uses: actions/upload-artifact@v4
+        with:
+          name: document-playwright-report
+          path: |
+            playwright-report/
+            test-results/playwright-report.json
+          if-no-files-found: warn
