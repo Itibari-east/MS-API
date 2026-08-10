@@ -7,6 +7,10 @@ on:
         type: string
         required: false
         default: ""
+      grep:
+        type: string
+        required: false
+        default: ""
       moduleName:
         type: string
         required: true
@@ -82,9 +86,14 @@ jobs:
       - name: Run Playwright API tests
         id: playwright
         continue-on-error: true
+        env:
+          GREP_FILTER: ${{ inputs.grep }}
+          TAG_FILTER: ${{ inputs.tag }}
         run: |
-          if [ -n "${{ inputs.tag }}" ]; then
-            npx playwright test --grep "${{ inputs.tag }}" --shard=${{ inputs.shardIndex }}/${{ inputs.shardTotal }}
+          if [ -n "$GREP_FILTER" ]; then
+            npx playwright test --grep "$GREP_FILTER" --pass-with-no-tests --shard=${{ inputs.shardIndex }}/${{ inputs.shardTotal }}
+          elif [ -n "$TAG_FILTER" ]; then
+            npx playwright test --grep "$TAG_FILTER" --shard=${{ inputs.shardIndex }}/${{ inputs.shardTotal }}
           else
             npx playwright test --shard=${{ inputs.shardIndex }}/${{ inputs.shardTotal }}
           fi
