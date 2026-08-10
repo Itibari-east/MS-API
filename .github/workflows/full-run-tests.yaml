@@ -12,6 +12,11 @@ on:
         type: choice
         options: [PRODUCTION, DEV]
         default: DEV
+      grep:
+        description: Optional Playwright grep regex. Matches test titles and @tags.
+        type: string
+        required: false
+        default: ""
 
 jobs:
   prepare-modules:
@@ -41,6 +46,7 @@ jobs:
     uses: ./.github/workflows/itibari-reusable.yaml
     with:
       tag: ${{ matrix.tag }}
+      grep: ${{ github.event_name == 'workflow_dispatch' && inputs.grep || '' }}
       moduleName: ${{ matrix.moduleName }}
       moduleSlug: ${{ matrix.moduleSlug }}
       environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'DEV' }}

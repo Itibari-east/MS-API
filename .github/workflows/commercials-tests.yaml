@@ -8,6 +8,11 @@ on:
         type: choice
         options: [PRODUCTION, DEV]
         default: DEV
+      grep:
+        description: Optional Playwright grep regex. Matches test titles and @tags.
+        type: string
+        required: false
+        default: ""
 
 jobs:
   run-playwright-tests:
@@ -18,6 +23,7 @@ jobs:
     uses: ./.github/workflows/itibari-reusable.yaml
     with:
       tag: "@commercials"
+      grep: ${{ inputs.grep }}
       moduleName: "Commercials API"
       moduleSlug: commercials
       environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'DEV' }}
