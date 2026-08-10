@@ -47,6 +47,20 @@ export const serviceConstants = {
       },
     },
   },
+  document: {
+    entityType: {
+      user: 'USER',
+    },
+    entitySubType: {
+      profile: 'PROFILE',
+    },
+    documentType: {
+      kycDocument: 'KYC_DOCUMENT',
+    },
+    referenceType: {
+      user: 'USER',
+    },
+  },
   accounting: {
     samples: {
       bankPublicId: '9c4c7e1e-613c-42df-b744-f60f20eb90d1',
