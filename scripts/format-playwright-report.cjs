@@ -81,6 +81,11 @@ function getDomainFromFile(fileName) {
     usermanagement: 'User Management API',
   };
 
+  const baseName = path.basename(normalized).toLowerCase();
+  if (baseName === 'auth.spec.ts') {
+    return moduleLabels.auth;
+  }
+
   const testsMatch = normalized.match(/(?:^|\/)tests\/([^/]+)/);
   if (testsMatch) {
     const testName = testsMatch[1]
