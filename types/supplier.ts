@@ -56,6 +56,17 @@ export interface SupplierRebateRecord {
   [key: string]: unknown;
 }
 
+export interface SupplierPurchaseOrderRecord {
+  publicId?: string;
+  orderNumber?: string;
+  status?: string;
+  dateCreated?: string;
+  supplierName?: string;
+  totalValue?: number;
+  currency?: string;
+  [key: string]: unknown;
+}
+
 export interface SupplierPerformanceRecord {
   publicId?: string;
   orderDate?: string;
@@ -81,8 +92,23 @@ export type SupplierActivityResponse = PaginatedResponse<SupplierActivityRecord>
 export type SupplierProductListResponse = PaginatedResponse<SupplierProductRecord>;
 export type SupplierDocumentListResponse = PaginatedResponse<SupplierDocumentRecord>;
 export type SupplierRebateListResponse = PaginatedResponse<SupplierRebateRecord>;
+export type SupplierPurchaseOrderListResponse = PaginatedResponse<SupplierPurchaseOrderRecord>;
 export type SupplierPerformanceDeliveryResponse = PaginatedResponse<SupplierPerformanceRecord>;
 export type SupplierSummaryResponse = Record<string, unknown>;
+export type SupplierPurchaseOrderSummaryResponse = Record<string, unknown>;
+export type SupplierPerformanceResponsivenessResponse = Record<string, unknown>[];
+export type SupplierPerformanceQualityResponse = Record<string, unknown>;
+export type SupplierPerformanceOrderStatusResponse = Record<string, unknown>;
+export type SupplierPerformanceLeadDaysResponse = Record<string, unknown>;
+export type SupplierPerformanceDeliverySeriesResponse = Record<string, unknown>;
+export type SupplierReportDashboardSummaryResponse = Record<string, unknown>;
+export type SupplierReportSupplierRowResponse = Record<string, unknown>;
+export type SupplierReportSupplierListResponse = PaginatedResponse<SupplierReportSupplierRowResponse>;
+export type SupplierReportCategoryRowResponse = Record<string, unknown>;
+export type SupplierReportCategoryListResponse = PaginatedResponse<SupplierReportCategoryRowResponse>;
+export type SupplierReportTrendResponse = Record<string, unknown>;
+export type SupplierReportRankingResponse = Record<string, unknown>;
+export type SupplierRebateAgreementResponse = Record<string, unknown>;
 
 export interface SupplierDraftPayload {
   name: string;
@@ -247,10 +273,65 @@ export interface SupplierRebateListParams extends QueryParams {
   sort?: string;
 }
 
+export interface SupplierPurchaseOrderListParams extends QueryParams {
+  search?: string;
+  status?: string;
+  dateCreatedFrom?: string;
+  dateCreatedTo?: string;
+  page?: number;
+  size?: number;
+  sort?: string;
+}
+
+export interface SupplierPurchaseOrderExportParams extends SupplierPurchaseOrderListParams {
+  exportType?: string;
+}
+
+export interface SupplierRebateExportParams extends SupplierRebateListParams {
+  exportType?: string;
+}
+
 export interface SupplierPerformanceDeliveryParams extends QueryParams {
   page?: number;
   size?: number;
   sort?: string;
+}
+
+export interface SupplierPerformanceLeadDaysParams extends QueryParams {
+  year: number;
+}
+
+export interface SupplierPerformanceDeliverySeriesParams extends QueryParams {
+  year: number;
+  month: number;
+}
+
+export interface SupplierReportsDashboardParams extends QueryParams {
+  countryCode?: string;
+  cityCode?: string;
+  page?: number;
+  size?: number;
+  sort?: string;
+  from?: string;
+  to?: string;
+}
+
+export interface SupplierReportsExportParams extends QueryParams {
+  search?: string;
+  status?: string;
+  leadDays?: number;
+  creditTerms?: string;
+  deliveryPerformance?: string;
+  country?: string;
+  city?: string;
+  exportType?: string;
+  page?: number;
+  size?: number;
+  sort?: string;
+}
+
+export interface SupplierPerformanceExportParams extends SupplierReportsDashboardParams {
+  exportType?: string;
 }
 
 export interface SupplierApiResult<T> {
