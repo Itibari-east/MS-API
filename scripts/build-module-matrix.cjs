@@ -11,11 +11,12 @@ const moduleMetadata = {
   commercials: { moduleName: 'Commercials API', tag: '@commercials', moduleSlug: 'commercials' },
   document: { moduleName: 'Document Service API', tag: '@document', moduleSlug: 'document' },
   inventory: { moduleName: 'Inventory API', tag: '@inventory', moduleSlug: 'inventory' },
+  logistics: { moduleName: 'Logistics Service API', tag: '@logistics', moduleSlug: 'logistics' },
   suppliers: { moduleName: 'Supplier API', tag: '@supplier', moduleSlug: 'supplier' },
   usermanagement: { moduleName: 'User Management API', tag: '@usermanagement', moduleSlug: 'usermanagement' },
 };
 
-const preferredOrder = ['auth', 'accounting', 'commercials', 'document', 'inventory', 'suppliers', 'usermanagement'];
+const preferredOrder = ['auth', 'accounting', 'commercials', 'document', 'inventory', 'logistics', 'suppliers', 'usermanagement'];
 
 function walk(dir) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });

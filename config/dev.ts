@@ -8,6 +8,7 @@ export const SERVICE_ENDPOINTS = {
   accountingService: joinUrl(DEV_BASE_URL, 'api/v1'),
   commercials: joinUrl(DEV_BASE_URL, 'commercials-service'),
   documentService: joinUrl(DEV_BASE_URL, 'document-service'),
+  logistics: joinUrl(DEV_BASE_URL, 'logistics-service'),
 };
 
 export const ENDPOINTS = {
