@@ -86,4 +86,17 @@ export const serviceConstants = {
       },
     },
   },
+  logistics: {
+    deliveryAgent: {
+      identificationType: {
+        nationalId: 'NATIONAL_ID',
+        passport: 'PASSPORT',
+        tin: 'TIN',
+      },
+      status: {
+        active: 'ACTIVE',
+        inactive: 'INACTIVE',
+      },
+    },
+  },
 } as const;
