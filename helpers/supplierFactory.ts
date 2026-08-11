@@ -20,7 +20,15 @@ import {
   SupplierDocumentRecord,
   SupplierProductListParams,
   SupplierRebateListParams,
+  SupplierRebateExportParams,
+  SupplierPurchaseOrderListParams,
+  SupplierPurchaseOrderExportParams,
   SupplierPerformanceDeliveryParams,
+  SupplierPerformanceLeadDaysParams,
+  SupplierPerformanceDeliverySeriesParams,
+  SupplierPerformanceExportParams,
+  SupplierReportsDashboardParams,
+  SupplierReportsExportParams,
 } from '../types/supplier';
 import { CreatedEntity, createBank, createBranch } from '../utils/accountingTestHelpers';
 
@@ -252,6 +260,50 @@ export async function buildSupplierRebateListParams(
   };
 }
 
+export async function buildSupplierRebateExportParams(
+  filters: Partial<SupplierRebateExportParams> = {},
+): Promise<SupplierRebateExportParams> {
+  return {
+    search: filters.search,
+    status: filters.status ?? 'PENDING',
+    periodFrom: filters.periodFrom,
+    periodTo: filters.periodTo,
+    exportType: filters.exportType ?? 'PDF',
+    page: filters.page ?? 0,
+    size: filters.size ?? 1000,
+    sort: filters.sort ?? 'period,DESC',
+  };
+}
+
+export async function buildSupplierPurchaseOrderListParams(
+  filters: Partial<SupplierPurchaseOrderListParams> = {},
+): Promise<SupplierPurchaseOrderListParams> {
+  return {
+    search: filters.search,
+    status: filters.status ?? 'PENDING',
+    dateCreatedFrom: filters.dateCreatedFrom,
+    dateCreatedTo: filters.dateCreatedTo,
+    page: filters.page ?? 0,
+    size: filters.size ?? 20,
+    sort: filters.sort ?? 'dateCreated,DESC',
+  };
+}
+
+export async function buildSupplierPurchaseOrderExportParams(
+  filters: Partial<SupplierPurchaseOrderExportParams> = {},
+): Promise<SupplierPurchaseOrderExportParams> {
+  return {
+    search: filters.search,
+    status: filters.status ?? 'PENDING',
+    dateCreatedFrom: filters.dateCreatedFrom,
+    dateCreatedTo: filters.dateCreatedTo,
+    exportType: filters.exportType ?? 'PDF',
+    page: filters.page ?? 0,
+    size: filters.size ?? 1000,
+    sort: filters.sort ?? 'dateCreated,DESC',
+  };
+}
+
 export async function buildSupplierPerformanceDeliveryParams(
   filters: Partial<SupplierPerformanceDeliveryParams> = {},
 ): Promise<SupplierPerformanceDeliveryParams> {
@@ -259,6 +311,66 @@ export async function buildSupplierPerformanceDeliveryParams(
     page: filters.page ?? 0,
     size: filters.size ?? 20,
     sort: filters.sort ?? 'orderDate,DESC',
+  };
+}
+
+export async function buildSupplierPerformanceLeadDaysParams(
+  year = new Date().getFullYear(),
+): Promise<SupplierPerformanceLeadDaysParams> {
+  return { year };
+}
+
+export async function buildSupplierPerformanceDeliverySeriesParams(
+  year = new Date().getFullYear(),
+  month = new Date().getMonth() + 1,
+): Promise<SupplierPerformanceDeliverySeriesParams> {
+  return { year, month };
+}
+
+export async function buildSupplierReportsDashboardParams(
+  filters: Partial<SupplierReportsDashboardParams> = {},
+): Promise<SupplierReportsDashboardParams> {
+  return {
+    countryCode: filters.countryCode ?? SUPPLIER_FIXTURES.countryCode,
+    cityCode: filters.cityCode ?? SUPPLIER_FIXTURES.cityCode,
+    from: filters.from,
+    to: filters.to,
+    page: filters.page ?? 0,
+    size: filters.size ?? 20,
+    sort: filters.sort ?? 'overallPercent,DESC',
+  };
+}
+
+export async function buildSupplierReportsExportParams(
+  filters: Partial<SupplierReportsExportParams> = {},
+): Promise<SupplierReportsExportParams> {
+  return {
+    search: filters.search,
+    status: filters.status ?? 'ACTIVE',
+    leadDays: filters.leadDays,
+    creditTerms: filters.creditTerms,
+    deliveryPerformance: filters.deliveryPerformance,
+    country: filters.country ?? SUPPLIER_FIXTURES.countryCode,
+    city: filters.city ?? SUPPLIER_FIXTURES.cityCode,
+    exportType: filters.exportType ?? 'PDF',
+    page: filters.page ?? 0,
+    size: filters.size ?? 1000,
+    sort: filters.sort ?? 'creationTime,DESC',
+  };
+}
+
+export async function buildSupplierPerformanceExportParams(
+  filters: Partial<SupplierPerformanceExportParams> = {},
+): Promise<SupplierPerformanceExportParams> {
+  return {
+    countryCode: filters.countryCode ?? SUPPLIER_FIXTURES.countryCode,
+    cityCode: filters.cityCode ?? SUPPLIER_FIXTURES.cityCode,
+    from: filters.from,
+    to: filters.to,
+    exportType: filters.exportType ?? 'PDF',
+    page: filters.page ?? 0,
+    size: filters.size ?? 1000,
+    sort: filters.sort ?? 'overallPercent,DESC',
   };
 }
 

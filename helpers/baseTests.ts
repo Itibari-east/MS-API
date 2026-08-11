@@ -16,7 +16,6 @@ import { SubClassApi } from '../services/subclass';
 import { PackageUnitApi } from '../services/packageUnit';
 import { _DocumentService } from '../services/document';
 import { _LogisticsService } from '../services/logistics';
-import { closeDatabase } from '../utils/database';
 
 const test = baseTest.extend<{
   common: _common;
@@ -88,10 +87,6 @@ const test = baseTest.extend<{
   logisticsService: async ({}, use) => {
     await use(new _LogisticsService());
   },
-});
-
-test.afterAll(async () => {
-  await closeDatabase();
 });
 
 export default test;
