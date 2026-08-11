@@ -70,14 +70,15 @@ function toTitleCase(value) {
 function getDomainFromFile(fileName) {
   const normalized = fileName.replace(/\\/g, '/');
   const moduleLabels = {
-    auth: 'Auth',
-    accounting: 'Accounting',
-    commercials: 'Commercials',
-    document: 'Document Service',
-    inventory: 'Inventory',
-    suppliers: 'Supplier',
-    supplier: 'Supplier',
-    usermanagement: 'User Management',
+    auth: 'Auth API',
+    accounting: 'Accounting API',
+    commercials: 'Commercials API',
+    document: 'Document Service API',
+    inventory: 'Inventory API',
+    logistics: 'Logistics Service API',
+    suppliers: 'Supplier API',
+    supplier: 'Supplier API',
+    usermanagement: 'User Management API',
   };
 
   const testsMatch = normalized.match(/(?:^|\/)tests\/([^/]+)/);
@@ -90,7 +91,9 @@ function getDomainFromFile(fileName) {
   }
 
   const parts = normalized.split('/').filter(Boolean);
-  const modulePart = parts.find((part) => moduleLabels[part] || ['auth', 'accounting', 'commercials', 'inventory', 'suppliers', 'supplier', 'usermanagement'].includes(part));
+  const modulePart = parts.find((part) =>
+    moduleLabels[part] || ['auth', 'accounting', 'commercials', 'inventory', 'logistics', 'suppliers', 'supplier', 'usermanagement'].includes(part),
+  );
   if (modulePart) {
     return moduleLabels[modulePart] || toTitleCase(modulePart);
   }
@@ -124,6 +127,7 @@ function getCoveragePrefix() {
   if (moduleName.includes('commercial')) return 'commercial';
   if (moduleName.includes('inventory')) return 'inventory';
   if (moduleName.includes('accounting')) return 'accounting';
+  if (moduleName.includes('logistics')) return 'logistics';
   return '';
 }
 
@@ -199,6 +203,7 @@ function getEndpointLabelFromSuiteTitles(suiteTitles = [], fileName = '') {
   if (normalizedFile === 'document.spec.ts') return 'document';
   if (normalizedFile.includes('supplier')) return 'supplier';
   if (normalizedFile.includes('user')) return 'user';
+  if (normalizedFile.includes('logistics')) return 'logistics';
 
   return '';
 }
