@@ -98,5 +98,27 @@ export const serviceConstants = {
         inactive: 'INACTIVE',
       },
     },
+    vehicleOwner: {
+      identificationType: {
+        nationalId: 'NATIONAL_ID',
+        passport: 'PASSPORT',
+        tin: 'TIN',
+      },
+    },
+    vehicle: {
+      type: {
+        truck: 'TRUCK',
+        trailer: 'TRAILER',
+        van: 'VAN',
+        motorcycle: 'MOTORCYCLE',
+        bicycle: 'BICYCLE',
+        tuktuk: 'TUKTUK',
+        other: 'OTHER',
+      },
+      insuranceType: {
+        comprehensive: 'COMPREHENSIVE',
+        thirdParty: 'THIRD_PARTY',
+      },
+    },
   },
 } as const;
