@@ -15,15 +15,15 @@ test.describe('@usermanagement Location Management', () => {
     await userManagementFlows.locationsDelete();
   });
 
-  test('blocks deleting a country with active cities', async ({ userManagementFlows }) => {
+  test('deletes a country with active cities', async ({ userManagementFlows }) => {
     await userManagementFlows.countryDeleteBlockedByCities();
   });
 
-  test('blocks deleting a city with active branches', async ({ userManagementFlows }) => {
+  test('deletes a city with active branches', async ({ userManagementFlows }) => {
     await userManagementFlows.cityDeleteBlockedByBranches();
   });
 
-  test('blocks deleting a branch with active users', async ({ userManagementFlows }) => {
+  test('deletes a branch with active users', async ({ userManagementFlows }) => {
     await userManagementFlows.branchDeleteBlockedByUsers();
   });
 

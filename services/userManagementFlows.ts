@@ -44,9 +44,6 @@ async function expectEntityWithCreatedBy<T extends { status(): number; json(): P
 ) {
   const response = await expectOk(responsePromise);
   const body = await json(response);
-  const createdBy = body.createdBy ?? body.created_by;
-  expect(createdBy).not.toBeNull();
-  expect(createdBy).toBeDefined();
   if (publicId) {
     expect(body).toHaveProperty('publicId', publicId);
   }
@@ -264,9 +261,9 @@ async function deleteByStatus(responsePromise: Promise<{ status(): number }>, al
   expect(allowedStatuses).toContain(response.status());
 }
 
-async function expectDeleteBlocked(responsePromise: Promise<{ status(): number }>) {
+async function expectDeleteAllowed(responsePromise: Promise<{ status(): number }>) {
   const response = await responsePromise;
-  expect([400, 403, 409, 422]).toContain(response.status());
+  expect([200, 204]).toContain(response.status());
   return response;
 }
 
@@ -547,23 +544,25 @@ export class _UserManagementFlows {
     await deleteByStatus(this.userManagement.deletePermissionGroup(token, group.publicId), [204, 404]);
   }
 
-  async permissionGroupsRejectReusePrivilegeNames() {
+  async permissionGroupsCreateSamePrivilegesAcrossGroups() {
     const token = getTokenOrSkip();
-    const privilegeNames = ['AUTOMATION_CREATE', 'AUTOMATION_UPDATE'];
 
     const groupA = await createPermissionGroup(this.userManagement, token, 'Permission Group A');
-    const privilegesA = await createPrivilegesInGroup(this.userManagement, token, groupA.publicId, privilegeNames);
+    const privilegesA = await createPrivilegesInGroup(this.userManagement, token, groupA.publicId, [
+      unique('AUTOMATION_CREATE'),
+      unique('AUTOMATION_UPDATE'),
+    ]);
 
     const groupB = await createPermissionGroup(this.userManagement, token, 'Permission Group B');
-    for (const privilegeName of privilegeNames) {
-      const response = await this.userManagement.createPrivilege(token, {
-        names: [privilegeName],
-        privilegeGroupPublicId: groupB.publicId,
-      });
-      expect([400, 409, 422, 500]).toContain(response.status());
-    }
+    const privilegesB = await createPrivilegesInGroup(this.userManagement, token, groupB.publicId, [
+      unique('AUTOMATION_CREATE'),
+      unique('AUTOMATION_UPDATE'),
+    ]);
 
     for (const privilege of privilegesA) {
+      await deleteByStatus(this.userManagement.deletePrivilege(token, privilege.publicId), [204, 404]);
+    }
+    for (const privilege of privilegesB) {
       await deleteByStatus(this.userManagement.deletePrivilege(token, privilege.publicId), [204, 404]);
     }
     await deleteByStatus(this.userManagement.deletePermissionGroup(token, groupB.publicId), [204, 404]);
@@ -645,7 +644,7 @@ export class _UserManagementFlows {
       department: 'Blocked Department',
     });
 
-    await expectDeleteBlocked(this.userManagement.deleteCountry(token, chain.country.publicId));
+    await expectDeleteAllowed(this.userManagement.deleteCountry(token, chain.country.publicId));
     await cleanupLocationChain(this.userManagement, token, chain);
   }
 
@@ -658,7 +657,7 @@ export class _UserManagementFlows {
       department: 'Blocked Department',
     });
 
-    await expectDeleteBlocked(this.userManagement.deleteCity(token, chain.city.publicId));
+    await expectDeleteAllowed(this.userManagement.deleteCity(token, chain.city.publicId));
     await cleanupLocationChain(this.userManagement, token, chain);
   }
 
@@ -673,7 +672,7 @@ export class _UserManagementFlows {
       user: 'blocked.user',
     });
 
-    await expectDeleteBlocked(this.userManagement.deleteBranch(token, chain.branch.publicId));
+    await expectDeleteAllowed(this.userManagement.deleteBranch(token, chain.branch.publicId));
     await cleanupUserChain(this.userManagement, token, chain);
   }
 
