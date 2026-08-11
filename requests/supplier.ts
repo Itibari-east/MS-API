@@ -39,11 +39,35 @@ export const _SupplierRequests = {
     },
     rebates: {
       list: (publicId: string) => `${base}/suppliers/${publicId}/rebates`,
+      agreement: (publicId: string, rebatePublicId: string) =>
+        `${base}/suppliers/${publicId}/rebates/${rebatePublicId}/agreement`,
+      export: (publicId: string) => `${base}/suppliers/${publicId}/rebates/export`,
       summary: (publicId: string) => `${base}/suppliers/${publicId}/rebates/summary`,
+    },
+    purchaseOrders: {
+      list: (publicId: string) => `${base}/suppliers/${publicId}/purchase-orders`,
+      summary: (publicId: string) => `${base}/suppliers/${publicId}/purchase-orders/summary`,
+      export: (publicId: string) => `${base}/suppliers/${publicId}/purchase-orders/export`,
     },
     performance: {
       summary: (publicId: string) => `${base}/suppliers/${publicId}/performance/summary`,
+      responsiveness: (publicId: string) => `${base}/suppliers/${publicId}/performance/responsiveness`,
+      quality: (publicId: string) => `${base}/suppliers/${publicId}/performance/quality`,
+      orderStatus: (publicId: string) => `${base}/suppliers/${publicId}/performance/order-status`,
+      leadDays: (publicId: string) => `${base}/suppliers/${publicId}/performance/lead-days`,
+      deliverySeries: (publicId: string) => `${base}/suppliers/${publicId}/performance/delivery-series`,
       deliveries: (publicId: string) => `${base}/suppliers/${publicId}/performance/deliveries`,
+    },
+    reports: {
+      export: () => `${base}/supplierReports/export`,
+      dashboard: {
+        summary: () => `${base}/supplier-reports/performance/summary`,
+        suppliers: () => `${base}/supplier-reports/performance/suppliers`,
+        categories: () => `${base}/supplier-reports/performance/categories`,
+        ranking: () => `${base}/supplier-reports/performance/ranking`,
+        trend: () => `${base}/supplier-reports/performance/trend`,
+        export: () => `${base}/supplier-reports/performance/export`,
+      },
     },
   },
 };

@@ -28,9 +28,30 @@ import {
   SupplierDocumentExportParams,
   SupplierRebateListParams,
   SupplierRebateListResponse,
+  SupplierRebateExportParams,
+  SupplierPurchaseOrderListParams,
+  SupplierPurchaseOrderListResponse,
+  SupplierPurchaseOrderSummaryResponse,
+  SupplierPurchaseOrderExportParams,
   SupplierPerformanceDeliveryParams,
   SupplierPerformanceDeliveryResponse,
+  SupplierPerformanceLeadDaysParams,
+  SupplierPerformanceDeliverySeriesParams,
+  SupplierPerformanceExportParams,
+  SupplierPerformanceResponsivenessResponse,
+  SupplierPerformanceQualityResponse,
+  SupplierPerformanceOrderStatusResponse,
+  SupplierPerformanceLeadDaysResponse,
+  SupplierPerformanceDeliverySeriesResponse,
   SupplierSummaryResponse,
+  SupplierReportDashboardSummaryResponse,
+  SupplierReportSupplierListResponse,
+  SupplierReportCategoryListResponse,
+  SupplierReportTrendResponse,
+  SupplierReportRankingResponse,
+  SupplierReportsDashboardParams,
+  SupplierReportsExportParams,
+  SupplierRebateAgreementResponse,
 } from '../types/supplier';
 
 type HttpMethod = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
@@ -532,6 +553,30 @@ export class SupplierApi {
     return this.execute<SupplierRebateListResponse>('GET', 'listRebates', url, token, undefined, [200]);
   }
 
+  exportRebates(
+    token: string,
+    publicId: SupplierId,
+    params: SupplierRebateExportParams,
+  ): Promise<APIResponse> {
+    const url = withQueryParams(_SupplierRequests.suppliers.rebates.export(publicId), params);
+    return this.executeRaw('GET', 'exportRebates', url, token, undefined, [200]);
+  }
+
+  getRebateAgreement(
+    token: string,
+    publicId: SupplierId,
+    rebatePublicId: string,
+  ): Promise<SupplierApiResult<SupplierRebateAgreementResponse>> {
+    return this.execute<SupplierRebateAgreementResponse>(
+      'GET',
+      'getRebateAgreement',
+      _SupplierRequests.suppliers.rebates.agreement(publicId, rebatePublicId),
+      token,
+      undefined,
+      [200],
+    );
+  }
+
   getRebatesSummary(token: string, publicId: SupplierId): Promise<SupplierApiResult<SupplierSummaryResponse>> {
     return this.execute<SupplierSummaryResponse>(
       'GET',
@@ -543,6 +588,38 @@ export class SupplierApi {
     );
   }
 
+  listPurchaseOrders(
+    token: string,
+    publicId: SupplierId,
+    params?: SupplierPurchaseOrderListParams,
+  ): Promise<SupplierApiResult<SupplierPurchaseOrderListResponse>> {
+    const url = withQueryParams(_SupplierRequests.suppliers.purchaseOrders.list(publicId), params);
+    return this.execute<SupplierPurchaseOrderListResponse>('GET', 'listPurchaseOrders', url, token, undefined, [200]);
+  }
+
+  getPurchaseOrderSummary(
+    token: string,
+    publicId: SupplierId,
+  ): Promise<SupplierApiResult<SupplierPurchaseOrderSummaryResponse>> {
+    return this.execute<SupplierPurchaseOrderSummaryResponse>(
+      'GET',
+      'getPurchaseOrderSummary',
+      _SupplierRequests.suppliers.purchaseOrders.summary(publicId),
+      token,
+      undefined,
+      [200],
+    );
+  }
+
+  exportPurchaseOrders(
+    token: string,
+    publicId: SupplierId,
+    params: SupplierPurchaseOrderExportParams,
+  ): Promise<APIResponse> {
+    const url = withQueryParams(_SupplierRequests.suppliers.purchaseOrders.export(publicId), params);
+    return this.executeRaw('GET', 'exportPurchaseOrders', url, token, undefined, [200]);
+  }
+
   getPerformanceSummary(
     token: string,
     publicId: SupplierId,
@@ -551,6 +628,73 @@ export class SupplierApi {
       'GET',
       'getPerformanceSummary',
       _SupplierRequests.suppliers.performance.summary(publicId),
+      token,
+      undefined,
+      [200],
+    );
+  }
+
+  listPerformanceResponsiveness(
+    token: string,
+    publicId: SupplierId,
+  ): Promise<SupplierApiResult<SupplierPerformanceResponsivenessResponse>> {
+    return this.execute<SupplierPerformanceResponsivenessResponse>(
+      'GET',
+      'listPerformanceResponsiveness',
+      _SupplierRequests.suppliers.performance.responsiveness(publicId),
+      token,
+      undefined,
+      [200],
+    );
+  }
+
+  getPerformanceQuality(
+    token: string,
+    publicId: SupplierId,
+  ): Promise<SupplierApiResult<SupplierPerformanceQualityResponse>> {
+    return this.execute<SupplierPerformanceQualityResponse>(
+      'GET',
+      'getPerformanceQuality',
+      _SupplierRequests.suppliers.performance.quality(publicId),
+      token,
+      undefined,
+      [200],
+    );
+  }
+
+  getPerformanceOrderStatus(
+    token: string,
+    publicId: SupplierId,
+  ): Promise<SupplierApiResult<SupplierPerformanceOrderStatusResponse>> {
+    return this.execute<SupplierPerformanceOrderStatusResponse>(
+      'GET',
+      'getPerformanceOrderStatus',
+      _SupplierRequests.suppliers.performance.orderStatus(publicId),
+      token,
+      undefined,
+      [200],
+    );
+  }
+
+  getPerformanceLeadDays(
+    token: string,
+    publicId: SupplierId,
+    params: SupplierPerformanceLeadDaysParams,
+  ): Promise<SupplierApiResult<SupplierPerformanceLeadDaysResponse>> {
+    const url = withQueryParams(_SupplierRequests.suppliers.performance.leadDays(publicId), params);
+    return this.execute<SupplierPerformanceLeadDaysResponse>('GET', 'getPerformanceLeadDays', url, token, undefined, [200]);
+  }
+
+  getPerformanceDeliverySeries(
+    token: string,
+    publicId: SupplierId,
+    params: SupplierPerformanceDeliverySeriesParams,
+  ): Promise<SupplierApiResult<SupplierPerformanceDeliverySeriesResponse>> {
+    const url = withQueryParams(_SupplierRequests.suppliers.performance.deliverySeries(publicId), params);
+    return this.execute<SupplierPerformanceDeliverySeriesResponse>(
+      'GET',
+      'getPerformanceDeliverySeries',
+      url,
       token,
       undefined,
       [200],
@@ -571,6 +715,83 @@ export class SupplierApi {
       undefined,
       [200],
     );
+  }
+
+  getSupplierReportsSummary(
+    token: string,
+    params?: SupplierReportsDashboardParams,
+  ): Promise<SupplierApiResult<SupplierReportDashboardSummaryResponse>> {
+    const url = withQueryParams(_SupplierRequests.suppliers.reports.dashboard.summary(), params);
+    return this.execute<SupplierReportDashboardSummaryResponse>(
+      'GET',
+      'getSupplierReportsSummary',
+      url,
+      token,
+      undefined,
+      [200],
+    );
+  }
+
+  listSupplierReports(
+    token: string,
+    params?: SupplierReportsDashboardParams,
+  ): Promise<SupplierApiResult<SupplierReportSupplierListResponse>> {
+    const url = withQueryParams(_SupplierRequests.suppliers.reports.dashboard.suppliers(), params);
+    return this.execute<SupplierReportSupplierListResponse>(
+      'GET',
+      'listSupplierReports',
+      url,
+      token,
+      undefined,
+      [200],
+    );
+  }
+
+  listSupplierReportCategories(
+    token: string,
+    params?: SupplierReportsDashboardParams,
+  ): Promise<SupplierApiResult<SupplierReportCategoryListResponse>> {
+    const url = withQueryParams(_SupplierRequests.suppliers.reports.dashboard.categories(), params);
+    return this.execute<SupplierReportCategoryListResponse>(
+      'GET',
+      'listSupplierReportCategories',
+      url,
+      token,
+      undefined,
+      [200],
+    );
+  }
+
+  listSupplierReportRanking(
+    token: string,
+    params?: SupplierReportsDashboardParams,
+  ): Promise<SupplierApiResult<SupplierReportRankingResponse[]>> {
+    const url = withQueryParams(_SupplierRequests.suppliers.reports.dashboard.ranking(), params);
+    return this.execute<SupplierReportRankingResponse[]>('GET', 'listSupplierReportRanking', url, token, undefined, [200]);
+  }
+
+  listSupplierReportTrend(
+    token: string,
+    params?: SupplierReportsDashboardParams,
+  ): Promise<SupplierApiResult<SupplierReportTrendResponse>> {
+    const url = withQueryParams(_SupplierRequests.suppliers.reports.dashboard.trend(), params);
+    return this.execute<SupplierReportTrendResponse>('GET', 'listSupplierReportTrend', url, token, undefined, [200, 400]);
+  }
+
+  exportSupplierReports(
+    token: string,
+    params: SupplierReportsExportParams,
+  ): Promise<APIResponse> {
+    const url = withQueryParams(_SupplierRequests.suppliers.reports.export(), params);
+    return this.executeRaw('GET', 'exportSupplierReports', url, token, undefined, [200]);
+  }
+
+  exportSupplierPerformance(
+    token: string,
+    params: SupplierPerformanceExportParams,
+  ): Promise<APIResponse> {
+    const url = withQueryParams(_SupplierRequests.suppliers.reports.dashboard.export(), params);
+    return this.executeRaw('GET', 'exportSupplierPerformance', url, token, undefined, [200]);
   }
 }
 
