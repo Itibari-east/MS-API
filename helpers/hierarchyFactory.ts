@@ -1,8 +1,8 @@
 import { expect } from '@playwright/test';
 import { serviceConstants } from '../constants/endpoints';
 import { CategoryApi } from '../services/category';
-import { ClassApi } from '../services/class';
-import { SubClassApi } from '../services/subclass';
+import { ClassApi, ClassApiError } from '../services/class';
+import { SubClassApi, SubClassApiError } from '../services/subclass';
 import { unique } from './testHelpers';
 import { CategorySeed, createCategory, cleanupCategory } from './categoryFactory';
 export { cleanupCategory } from './categoryFactory';
@@ -34,6 +34,24 @@ function logHierarchy(message: string, details?: Record<string, unknown>) {
   }
 
   console.log(`[Hierarchy] ${message}`);
+}
+
+function isConflictError(error: unknown, ErrorCtor: new (...args: any[]) => { status: number }) {
+  return error instanceof ErrorCtor && error.status === 409;
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isTransientNetworkError(error: unknown) {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+
+  const code = String((error as { code?: unknown }).code ?? '');
+  const message = String((error as { message?: unknown }).message ?? error);
+  return /ECONNRESET|ETIMEDOUT|EAI_AGAIN|socket hang up|network/i.test(`${code} ${message}`);
 }
 
 export interface ClassSeed {
@@ -127,20 +145,37 @@ export async function createClass(
   categoryPublicId: string,
   namePrefix = 'Class Automation',
 ): Promise<ClassSeed> {
-  const name = unique(namePrefix);
-  const response = await classApi.createClass(token, buildClassCreatePayload(name, categoryPublicId));
-  expect([200, 201]).toContain(response.status);
+  let lastError: unknown;
 
-  const publicId = String(response.data?.publicId ?? response.data?.classPublicId ?? '');
-  const resolvedPublicId = publicId || (await resolveClassPublicId(classApi, token, name, categoryPublicId));
-  logHierarchy('created class', { publicId: resolvedPublicId, categoryPublicId });
+  for (let attempt = 1; attempt <= 5; attempt += 1) {
+    const name = unique(attempt === 1 ? namePrefix : `${namePrefix} Retry ${attempt}`);
+    try {
+      const response = await classApi.createClass(token, buildClassCreatePayload(name, categoryPublicId));
+      expect([200, 201]).toContain(response.status);
 
-  return {
-    name,
-    publicId: resolvedPublicId,
-    categoryPublicId,
-    class: response.data,
-  };
+      const publicId = String(response.data?.publicId ?? response.data?.classPublicId ?? '');
+      const resolvedPublicId = publicId || (await resolveClassPublicId(classApi, token, name, categoryPublicId));
+      logHierarchy('created class', { publicId: resolvedPublicId, categoryPublicId });
+
+      return {
+        name,
+        publicId: resolvedPublicId,
+        categoryPublicId,
+        class: response.data,
+      };
+    } catch (error) {
+      lastError = error;
+      if ((!isConflictError(error, ClassApiError) && !isTransientNetworkError(error)) || attempt === 5) {
+        throw error;
+      }
+      console.warn(
+        `[Hierarchy] retrying class creation after ${isConflictError(error, ClassApiError) ? 'conflict' : 'network error'} (attempt ${attempt}/5)`,
+      );
+      await sleep(500 * attempt);
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error('Unable to create class');
 }
 
 export async function expectClassDetails(classApi: ClassApi, token: string, classSeed: ClassSeed) {
@@ -276,24 +311,42 @@ export async function createSubClass(
   classPublicId: string,
   namePrefix = 'SubClass Automation',
 ): Promise<SubClassSeed> {
-  const name = unique(namePrefix);
-  const response = await subClassApi.createSubClass(
-    token,
-    buildSubClassCreatePayload(name, categoryPublicId, classPublicId),
-  );
-  expect([200, 201]).toContain(response.status);
+  let lastError: unknown;
 
-  const publicId = String(response.data?.publicId ?? response.data?.subclassPublicId ?? '');
-  const resolvedPublicId = publicId || (await resolveSubClassPublicId(subClassApi, token, name, categoryPublicId, classPublicId));
-  logHierarchy('created sub-class', { publicId: resolvedPublicId, categoryPublicId, classPublicId });
+  for (let attempt = 1; attempt <= 5; attempt += 1) {
+    const name = unique(attempt === 1 ? namePrefix : `${namePrefix} Retry ${attempt}`);
+    try {
+      const response = await subClassApi.createSubClass(
+        token,
+        buildSubClassCreatePayload(name, categoryPublicId, classPublicId),
+      );
+      expect([200, 201]).toContain(response.status);
 
-  return {
-    name,
-    publicId: resolvedPublicId,
-    categoryPublicId,
-    classPublicId,
-    subClass: response.data,
-  };
+      const publicId = String(response.data?.publicId ?? response.data?.subclassPublicId ?? '');
+      const resolvedPublicId =
+        publicId || (await resolveSubClassPublicId(subClassApi, token, name, categoryPublicId, classPublicId));
+      logHierarchy('created sub-class', { publicId: resolvedPublicId, categoryPublicId, classPublicId });
+
+      return {
+        name,
+        publicId: resolvedPublicId,
+        categoryPublicId,
+        classPublicId,
+        subClass: response.data,
+      };
+    } catch (error) {
+      lastError = error;
+      if ((!isConflictError(error, SubClassApiError) && !isTransientNetworkError(error)) || attempt === 5) {
+        throw error;
+      }
+      console.warn(
+        `[Hierarchy] retrying sub-class creation after ${isConflictError(error, SubClassApiError) ? 'conflict' : 'network error'} (attempt ${attempt}/5)`,
+      );
+      await sleep(500 * attempt);
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error('Unable to create sub-class');
 }
 
 export async function expectSubClassDetails(
