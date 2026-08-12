@@ -13,7 +13,7 @@ test.describe('@usermanagement Permission Management', () => {
     await userManagementFlows.permissionGroupsDelete();
   });
 
-  test('rejects reusing privilege names in different permission groups', async ({ userManagementFlows }) => {
-    await userManagementFlows.permissionGroupsRejectReusePrivilegeNames();
+  test('creates the same privilege set in different permission groups', async ({ userManagementFlows }) => {
+    await userManagementFlows.permissionGroupsCreateSamePrivilegesAcrossGroups();
   });
 });
