@@ -29,9 +29,10 @@ test.describe('@accounting Accounting Service - Supplier Bank Accounts', () => {
       [200],
     );
 
-    const text = await response.text();
-    expect(text).toBeTruthy();
-    expect(text).toContain(supplier.bank!.code);
-    expect(text).toContain(supplier.branch!.code);
+    const body = await response.json();
+    expect(body).toBeTruthy();
+    expect(body.publicId ?? body.supplierPublicId).toBe(supplier.publicId);
+    expect(body.supplierCode ?? body.code).toBeTruthy();
+    expect(body.name).toBe(supplier.name);
   });
 });

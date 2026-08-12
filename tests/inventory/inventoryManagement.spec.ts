@@ -3,6 +3,8 @@ import test from '../../helpers/baseTests';
 import { getTokenOrSkip } from '../../helpers/testHelpers';
 
 test.describe('@inventory Inventory Management API', () => {
+  test.describe.configure({ mode: 'serial' });
+
   test.describe('Warehouses', () => {
     test('creates, updates, fetches and deletes a warehouse', async ({ inventoryManagementFlows }) => {
       await inventoryManagementFlows.warehouseCrud();

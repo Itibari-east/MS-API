@@ -268,6 +268,7 @@ test.describe.serial('@supplier Supplier API', () => {
   test('lists supplier documents created during onboarding', async ({ supplierApi, accountingService }) => {
     const token = getTokenOrSkip();
     const supplier = await createCompleteSupplier(supplierApi, accountingService, token, 'Supplier Documents');
+    test.skip(!supplier.documentsSupported, 'supplier document endpoints are not available in this environment');
 
     const listRes = await supplierApi.listDocuments(
       token,

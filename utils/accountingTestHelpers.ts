@@ -57,6 +57,10 @@ function findEntityByCode(body: any, code: string, name?: string) {
   return contentItems(body).find((item) => item?.code === code || (name ? item?.name === name : false));
 }
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 async function resolveBankPublicId(accounting: _AccountingService, token: string, code: string, name: string) {
   const response = await expectStatuses(accounting.listBanks(token, { search: code, page: 0, size: 50 }), [200]);
   const body = await json(response);
@@ -89,25 +93,43 @@ export async function createBank(
   prefix: string,
 ): Promise<CreatedEntity> {
   const name = `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-  const code = bankCode();
-  const swift = swiftCode();
   // Bank creation is a plain JSON request; there is no document upload in this flow.
-  const response = await expectStatuses(
-    accounting.createBank(token, {
-      name,
-      code,
-      country: accountingConstants.bank.country,
-      swiftCode: swift,
-      status: accountingConstants.bank.status.active,
-    }),
-    [201],
-  );
+  let lastError: unknown;
 
-  const body = await json(response);
-  const bodyPublicId = Array.isArray(body) ? body[0]?.publicId : body?.publicId;
-  const publicId = bodyPublicId || (await resolveBankPublicId(accounting, token, code, name));
+  for (let attempt = 1; attempt <= 4; attempt += 1) {
+    const code = bankCode();
+    const swift = swiftCode();
 
-  return { name, code, publicId, swiftCode: swift };
+    try {
+      const response = await expectStatuses(
+        accounting.createBank(token, {
+          name: attempt === 1 ? name : `${name}-retry-${attempt}`,
+          code,
+          country: accountingConstants.bank.country,
+          swiftCode: swift,
+          status: accountingConstants.bank.status.active,
+        }),
+        [201],
+      );
+
+      const body = await json(response);
+      const bodyPublicId = Array.isArray(body) ? body[0]?.publicId : body?.publicId;
+      const publicId = bodyPublicId || (await resolveBankPublicId(accounting, token, code, name));
+
+      return { name: attempt === 1 ? name : `${name}-retry-${attempt}`, code, publicId, swiftCode: swift };
+    } catch (error) {
+      lastError = error;
+      const errorText = String(error);
+      if (!errorText.includes('already exists') || attempt === 4) {
+        throw error;
+      }
+
+      console.warn(`[Accounting] retrying bank creation after duplicate code collision (attempt ${attempt}/4)`);
+      await sleep(200 * attempt);
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error('Unable to create bank');
 }
 
 export async function createBranch(
@@ -117,23 +139,40 @@ export async function createBranch(
   prefix: string,
 ) {
   const name = `${prefix}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-  const code = branchCode();
-  // Branch creation is also a plain JSON request.
-  const response = await expectStatuses(
-    accounting.createBranch(token, bankPublicId, {
-      name,
-      code,
-      city: accountingConstants.branch.city.arusha,
-      bankPublicId,
-    }),
-    [201],
-  );
+  let lastError: unknown;
 
-  const body = await json(response);
-  const bodyPublicId = Array.isArray(body) ? body[0]?.publicId : body?.publicId;
-  const publicId = bodyPublicId || (await resolveBranchPublicId(accounting, token, bankPublicId, code, name));
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    const code = branchCode();
 
-  return { name, code, publicId };
+    try {
+      const response = await expectStatuses(
+        accounting.createBranch(token, bankPublicId, {
+          name: attempt === 1 ? name : `${name}-retry-${attempt}`,
+          code,
+          city: accountingConstants.branch.city.arusha,
+          bankPublicId,
+        }),
+        [201],
+      );
+
+      const body = await json(response);
+      const bodyPublicId = Array.isArray(body) ? body[0]?.publicId : body?.publicId;
+      const publicId = bodyPublicId || (await resolveBranchPublicId(accounting, token, bankPublicId, code, name));
+
+      return { name: attempt === 1 ? name : `${name}-retry-${attempt}`, code, publicId };
+    } catch (error) {
+      lastError = error;
+      const errorText = String(error);
+      if (!errorText.includes('already exists') || attempt === 3) {
+        throw error;
+      }
+
+      console.warn(`[Accounting] retrying branch creation after duplicate code collision (attempt ${attempt}/3)`);
+      await sleep(200 * attempt);
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error('Unable to create branch');
 }
 
 export async function expectBankDetails(
