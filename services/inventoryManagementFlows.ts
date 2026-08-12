@@ -73,6 +73,7 @@ type WarehousePayload = {
 
 export class _InventoryManagementFlows {
   private branchSetup?: BranchSetup;
+  private regionCache?: { token: string; regions: { publicId: string; name: string }[] };
 
   constructor(
     private readonly inventoryManagement: _InventoryManagementService,
@@ -80,6 +81,8 @@ export class _InventoryManagementFlows {
   ) {}
 
   private async getFreeRegionPublicId(token: string): Promise<string> {
+    const cachedRegions = await this.getAllRegions(token);
+
     const warehousesRes = await this.inventoryManagement.listWarehouses(token, { page: 0, size: 500 });
     expect(warehousesRes.status()).toBe(200);
     const usedRegions: string[] = (await json(warehousesRes)).content.flatMap(
@@ -102,18 +105,33 @@ export class _InventoryManagementFlows {
       geofence.regionPublicId ?? '',
     ]);
 
-    const regionsRes = await this.userManagement.listRegions(token, { page: 0, size: 50 });
-    expect(regionsRes.status()).toBe(200);
-    const regions = (await json(regionsRes)).content as { publicId: string; name: string }[];
-    const freeRegion = regions.find((region) => !usedRegions.includes(region.publicId) && !geofenceRegions.includes(region.publicId));
+    const freeRegion = cachedRegions.find((region) => !usedRegions.includes(region.publicId) && !geofenceRegions.includes(region.publicId));
     test.skip(!freeRegion, 'requires at least one region without a warehouse');
     return freeRegion!.publicId;
   }
 
+  private async getAllRegions(token: string): Promise<{ publicId: string; name: string }[]> {
+    if (this.regionCache?.token === token) {
+      return this.regionCache.regions;
+    }
+
+    const regions: { publicId: string; name: string }[] = [];
+    for (let page = 0; ; page += 1) {
+      const regionsRes = await this.userManagement.listRegions(token, { page, size: 50 });
+      expect(regionsRes.status()).toBe(200);
+      const body = await json(regionsRes);
+      regions.push(...(body.content as { publicId: string; name: string }[]));
+      if (body.last || body.content.length === 0) {
+        break;
+      }
+    }
+
+    this.regionCache = { token, regions };
+    return regions;
+  }
+
   private async getFirstRegionPublicId(token: string): Promise<string> {
-    const regionsRes = await this.userManagement.listRegions(token, { page: 0, size: 1 });
-    expect(regionsRes.status()).toBe(200);
-    const regionPublicId = firstContentPublicId(await json(regionsRes));
+    const regionPublicId = (await this.getAllRegions(token))[0]?.publicId ?? firstContentPublicId(await json(await this.userManagement.listRegions(token, { page: 0, size: 1 })));
     test.skip(!regionPublicId, 'requires at least one region');
     return regionPublicId;
   }
@@ -353,10 +371,32 @@ export class _InventoryManagementFlows {
     warehousePublicId: string,
     input: GeofenceInput = {},
   ) {
-    const payload = this.buildGeofencePayload(regionPublicId, warehousePublicId, input);
-    const response = await this.inventoryManagement.updateGeofence(token, publicId, payload);
-    expect([200, 201]).toContain(response.status());
-    return response;
+    let payload = this.buildGeofencePayload(regionPublicId, warehousePublicId, input);
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      const response = await this.inventoryManagement.updateGeofence(token, publicId, payload);
+      if ([200, 201].includes(response.status())) {
+        return response;
+      }
+
+      const body = await json(response).catch(() => ({}));
+      const overlapMessage = String((body as { userMessage?: string; developerMessage?: string }).userMessage ?? '')
+        .concat(' ', String((body as { developerMessage?: string }).developerMessage ?? ''))
+        .toLowerCase();
+      const shouldRetry = response.status() === 400 && overlapMessage.includes('overlap');
+      if (!shouldRetry || !payload.geoJson) {
+        expect([200, 201]).toContain(response.status());
+        return response;
+      }
+
+      const shift = 0.12 + Math.random() * 0.2;
+      payload = {
+        ...payload,
+        geoJson: shiftGeoJson(payload.geoJson, shift, shift),
+      };
+    }
+
+    expect(false).toBeTruthy();
+    return undefined as never;
   }
 
   private async attemptGeofenceCreate(

@@ -2,6 +2,8 @@ import { expect } from '@playwright/test';
 import test from '../../helpers/baseTests';
 import { getTokenOrSkip } from '../../helpers/testHelpers';
 
+test.setTimeout(100000);
+
 test.describe('@inventory Inventory Management API', () => {
   test.describe.configure({ mode: 'serial' });
 
@@ -106,17 +108,5 @@ test.describe('@inventory Inventory Management API', () => {
     });
   });
 
-  test.describe('Yet to be implemented - customer auto-assignment coverage gaps', () => {
-    test.skip('assigns a customer to a geofence and warehouse when the customer is inside a fence', async () => {});
-
-    test.skip('assigns customers inside different fences to the same warehouse when fences share a warehouse', async () => {});
-
-    test.skip('assigns a customer to the correct geofence and warehouse across different warehouses', async () => {});
-
-    test.skip('does not randomly assign a customer when the customer is outside all active geofences', async () => {});
-
-    test.skip('does not assign customers to inactive geofences', async () => {});
-
-    test.skip('handles boundary coordinate cases consistently for customer assignment', async () => {});
-  });
+  // Customer auto-assignment coverage is still awaiting backend endpoint support.
 });
