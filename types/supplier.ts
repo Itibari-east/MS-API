@@ -133,6 +133,7 @@ export interface SupplierContactPayload {
 export interface SupplierPointOfContactPayload {
   firstName: string;
   lastName: string;
+  contactType?: string;
   jobTitle?: string;
   phone: string;
   alternativePhone?: string;

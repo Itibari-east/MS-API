@@ -8,8 +8,12 @@ test.describe('@inventory Inventory Management API', () => {
   test.describe.configure({ mode: 'serial' });
 
   test.describe('Warehouses', () => {
-    test('creates, updates, fetches and deletes a warehouse', async ({ inventoryManagementFlows }) => {
-      await inventoryManagementFlows.warehouseCrud();
+    test('creates, updates, fetches and deletes a Main warehouse', async ({ inventoryManagementFlows }) => {
+      await inventoryManagementFlows.warehouseCrud('Main');
+    });
+
+    test('creates, updates, fetches and deletes a Quarantine warehouse', async ({ inventoryManagementFlows }) => {
+      await inventoryManagementFlows.warehouseCrud('Quarantine');
     });
 
     test('lists warehouses with pagination', async ({ inventoryManagementFlows }) => {

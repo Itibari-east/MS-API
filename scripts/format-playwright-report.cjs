@@ -76,6 +76,7 @@ function getDomainFromFile(fileName) {
     document: 'Document Service API',
     inventory: 'Inventory API',
     logistics: 'Logistics Service API',
+    pos: 'POS API',
     suppliers: 'Supplier API',
     supplier: 'Supplier API',
     usermanagement: 'User Management API',
@@ -133,6 +134,7 @@ function getCoveragePrefix() {
   if (moduleName.includes('inventory')) return 'inventory';
   if (moduleName.includes('accounting')) return 'accounting';
   if (moduleName.includes('logistics')) return 'logistics';
+  if (moduleName.includes('pos')) return 'pos';
   return '';
 }
 
@@ -209,6 +211,7 @@ function getEndpointLabelFromSuiteTitles(suiteTitles = [], fileName = '') {
   if (normalizedFile.includes('supplier')) return 'supplier';
   if (normalizedFile.includes('user')) return 'user';
   if (normalizedFile.includes('logistics')) return 'logistics';
+  if (normalizedFile.includes('pos')) return 'login';
 
   return '';
 }
@@ -416,6 +419,58 @@ function summarizeTests(tests) {
     },
     { total: 0, passed: 0, failed: 0, skipped: 0, flaky: 0 },
   );
+}
+
+function formatFailureLines(test) {
+  const location = formatTestLocation(test);
+  const lines = [`- ${formatTestTitle(test)}${location ? ` (${location})` : ''}`];
+  const failureLines = String(test.failure || '')
+    .trim()
+    .split('\n')
+    .map((line) => line.trimEnd())
+    .filter(Boolean)
+    .slice(0, 6);
+
+  if (failureLines.length) {
+    for (const failureLine of failureLines) {
+      lines.push(`  ${failureLine}`);
+    }
+  } else {
+    lines.push('  Error: No error details were captured.');
+  }
+
+  return lines;
+}
+
+function buildFailedTestsReportLines(tests, workflowSummaries = []) {
+  const failedTests = tests.filter((test) => test.status === 'failed');
+  const lines = [];
+  lines.push('*Failed Tests Report*');
+
+  if (!failedTests.length) {
+    lines.push(...formatCodeBlock(['- None']));
+    return lines;
+  }
+
+  const grouped = groupByDomain(failedTests);
+  const domainOrder = [
+    ...workflowSummaries.map(({ domain }) => domain),
+    ...Object.keys(grouped),
+  ];
+  const seenDomains = new Set();
+
+  for (const domain of domainOrder) {
+    if (seenDomains.has(domain) || !grouped[domain]?.length) {
+      continue;
+    }
+
+    seenDomains.add(domain);
+    lines.push(`*${domain}*`);
+    lines.push(...formatCodeBlock(grouped[domain].flatMap((test) => formatFailureLines(test))));
+    lines.push('');
+  }
+
+  return lines;
 }
 
 function formatWorkflowSummaryLine(domain, summary) {
@@ -642,6 +697,10 @@ function buildSlackMessageParts(report) {
   if (reportLayout === 'full-run') {
     summaryLines.push(...buildModuleSummaryTableLines(workflowSummaries, totals));
     summaryLines.push('');
+    if (totals.failed > 0) {
+      summaryLines.push(...buildFailedTestsReportLines(tests, workflowSummaries));
+      summaryLines.push('');
+    }
     for (const { domain } of workflowSummaries) {
       threadMessages.push(
         buildModuleBreakdownLines(domain, byDomain[domain] || [], '', {

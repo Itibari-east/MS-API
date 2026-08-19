@@ -41,6 +41,12 @@ on:
         required: true
       MS_DEV_BASE_URL:
         required: true
+      POS_ADMIN_USERNAME:
+        required: false
+      POS_ADMIN_PASSWORD:
+        required: false
+      MS_POS_BASE_URL:
+        required: false
       GMAIL_CLIENT_ID:
         required: false
       GMAIL_CLIENT_SECRET:
@@ -64,6 +70,9 @@ jobs:
       MS_USER_PASSWORD: ${{ secrets.MS_USER_PASSWORD }}
       MS_TOTP_SECRET: ${{ secrets.MS_TOTP_SECRET }}
       MS_DEV_BASE_URL: ${{ secrets.MS_DEV_BASE_URL }}
+      POS_ADMIN_USERNAME: ${{ secrets.POS_ADMIN_USERNAME }}
+      POS_ADMIN_PASSWORD: ${{ secrets.POS_ADMIN_PASSWORD }}
+      MS_POS_BASE_URL: ${{ secrets.MS_POS_BASE_URL }}
       GMAIL_CLIENT_ID: ${{ secrets.GMAIL_CLIENT_ID }}
       GMAIL_CLIENT_SECRET: ${{ secrets.GMAIL_CLIENT_SECRET }}
       GMAIL_TEST_EMAIL: ${{ secrets.GMAIL_TEST_EMAIL }}

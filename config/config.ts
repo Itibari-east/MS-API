@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
-import { DEV_BASE_URL, SERVICE_ENDPOINTS } from './dev';
+import { DEV_BASE_URL, SERVICE_ENDPOINTS, normalizePosBaseUrl } from './dev';
 import { _prod } from './prod';
 import { _users } from './users';
 import { joinUrl, normalizeBaseUrl } from '../utils/url';
@@ -22,6 +22,7 @@ interface Config {
     commercials: string;
     documentService: string;
     logistics: string;
+    pos: string;
   };
   email: string;
   password: string;
@@ -39,6 +40,7 @@ let _config: Config = {
     commercials: '',
     documentService: '',
     logistics: '',
+    pos: '',
   },
   email: '',
   password: '',
@@ -50,20 +52,21 @@ if (ENV.toUpperCase() === DEV) {
     email: _users.common.email,
     password: _users.common.password,
   };
-  } else if (ENV.toUpperCase() === PROD) {
+} else if (ENV.toUpperCase() === PROD) {
   const prodBaseUrl = normalizeBaseUrl(_prod.common.BASE_URL);
   _config = {
-      baseEndpoint: prodBaseUrl,
-      serviceEndpoints: {
-        userManagement: joinUrl(prodBaseUrl, 'user-management-service'),
-        inventoryManagement: joinUrl(prodBaseUrl, 'inventory-management-service'),
-        accountingService: joinUrl(prodBaseUrl, 'accounting-service'),
-        commercials: joinUrl(prodBaseUrl, 'commercials-service'),
-        documentService: joinUrl(prodBaseUrl, 'document-service'),
-        logistics: joinUrl(prodBaseUrl, 'logistics-service'),
-      },
-      email: process.env.MS_USER_EMAIL || 'd.chirchir@itibari.io',
-      password: process.env.MS_USER_PASSWORD || 'Silot777@',
+    baseEndpoint: prodBaseUrl,
+    serviceEndpoints: {
+      userManagement: joinUrl(prodBaseUrl, 'user-management-service'),
+      inventoryManagement: joinUrl(prodBaseUrl, 'inventory-management-service'),
+      accountingService: joinUrl(prodBaseUrl, 'accounting-service'),
+      commercials: joinUrl(prodBaseUrl, 'commercials-service'),
+      documentService: joinUrl(prodBaseUrl, 'document-service'),
+      logistics: joinUrl(prodBaseUrl, 'logistics-service'),
+      pos: normalizePosBaseUrl(process.env.MS_POS_BASE_URL || prodBaseUrl),
+    },
+    email: process.env.MS_USER_EMAIL || 'd.chirchir@itibari.io',
+    password: process.env.MS_USER_PASSWORD || 'Silot777@',
   };
 } else {
   throw new Error(`Unknown ENVIRONMENT: ${ENV}`);

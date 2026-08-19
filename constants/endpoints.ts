@@ -23,6 +23,7 @@ export const serviceConstants = {
   auth: {
     channel: {
       web: 'WEB',
+      pos: 'POS',
     },
   },
   commercials: {
@@ -51,6 +52,19 @@ export const serviceConstants = {
       status: {
         active: 'ACTIVE',
         inactive: 'INACTIVE',
+      },
+    },
+    product: {
+      status: {
+        pendingApproval: 'PENDING_APPROVAL',
+        active: 'ACTIVE',
+        inactive: 'INACTIVE',
+      },
+      stockStatus: {
+        low: 'LOW',
+        medium: 'MEDIUM',
+        inStock: 'IN_STOCK',
+        outOfStock: 'OUT_OF_STOCK',
       },
     },
   },

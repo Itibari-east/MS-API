@@ -1,8 +1,33 @@
 import { _AccountingRequests } from '../requests/accounting';
 import { common } from '../utils/common';
 import { authHeaders, QueryParams, withQueryParams } from './requestHelpers';
+import { TaxCodeApiResult, TaxCodeListParams, TaxCodeRequest, TaxCodeResponse, PageTaxCodeResponse } from '../types/accounting';
 
 export class _AccountingService {
+  listTaxCodeKinds(token: string) {
+    return common.getResponse(_AccountingRequests.taxes.kinds(), undefined, authHeaders(token));
+  }
+
+  listTaxCodes(token: string, params?: TaxCodeListParams): Promise<TaxCodeApiResult<PageTaxCodeResponse>> {
+    return common.getResponse(withQueryParams(_AccountingRequests.taxes.list(), params), undefined, authHeaders(token));
+  }
+
+  createTaxCode(token: string, payload: TaxCodeRequest): Promise<TaxCodeApiResult<TaxCodeResponse>> {
+    return common.postResponse(_AccountingRequests.taxes.create(), payload, authHeaders(token));
+  }
+
+  getTaxCode(token: string, publicId: string): Promise<TaxCodeApiResult<TaxCodeResponse>> {
+    return common.getResponse(_AccountingRequests.taxes.byId(publicId), undefined, authHeaders(token));
+  }
+
+  updateTaxCode(token: string, publicId: string, payload: TaxCodeRequest): Promise<TaxCodeApiResult<TaxCodeResponse>> {
+    return common.patchResponse(_AccountingRequests.taxes.byId(publicId), payload, authHeaders(token));
+  }
+
+  deleteTaxCode(token: string, publicId: string) {
+    return common.deleteResponse(_AccountingRequests.taxes.byId(publicId), undefined, authHeaders(token));
+  }
+
   listBanks(token: string, params?: QueryParams) {
     return common.getResponse(withQueryParams(_AccountingRequests.banks.list(), params), undefined, authHeaders(token));
   }

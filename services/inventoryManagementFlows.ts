@@ -2,7 +2,7 @@ import { expect } from '@playwright/test';
 import { _InventoryManagementService } from './inventoryManagement';
 import { _UserManagementService } from './userManagement';
 import { getTokenOrSkip, json, unique } from '../helpers/testHelpers';
-import { InventoryFactory, buildSquareGeoJson } from '../utils/inventoryFactory';
+import { InventoryFactory, buildSquareGeoJson, WarehouseType } from '../utils/inventoryFactory';
 
 export class _InventoryManagementFlows {
   private readonly factory: InventoryFactory;
@@ -22,19 +22,20 @@ export class _InventoryManagementFlows {
     return this.factory.cleanupGeofenceBranchSetup(token);
   }
 
-  async warehouseCrud() {
+  async warehouseCrud(warehouseType: WarehouseType = 'Main') {
     const token = getTokenOrSkip();
     const regionPublicId = await this.factory.getFreeRegionPublicId(token);
-    const warehouse = await this.factory.createWarehouse(token, regionPublicId, 'QA Warehouse');
+    const warehouse = await this.factory.createWarehouseOfType(token, regionPublicId, 'QA Warehouse', warehouseType);
 
     const getRes = await this.inventoryManagement.getWarehouse(token, warehouse.publicId);
     expect(getRes.status()).toBe(200);
     expect(await json(getRes)).toHaveProperty('publicId', warehouse.publicId);
 
     const updatedRegionPublicId = await this.factory.getFreeRegionPublicId(token);
+    const updatedWarehouseType: WarehouseType = warehouseType === 'Main' ? 'Quarantine' : 'Main';
     const updateRes = await this.inventoryManagement.updateWarehouse(token, warehouse.publicId, {
       warehouseName: unique('QA Warehouse Updated'),
-      warehouseType: 'Quarantine',
+      warehouseType: updatedWarehouseType,
       regionPublicId: updatedRegionPublicId,
       regions: [updatedRegionPublicId],
       lat: '-6.1667',

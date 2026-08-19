@@ -8,6 +8,7 @@ Playwright + TypeScript API automation framework for the MS API suite.
 - `services/` - reusable API clients and business workflows.
 - `requests/` - raw endpoint mappings.
 - `helpers/` - fixtures, shared test helpers, and global setup wiring.
+- `pos/` - POS-specific request, service, and fixture helpers.
 - `config/` - environment-specific base URLs and auth defaults.
 - `auth/` - generated auth state and login helpers.
 - `utils/` - shared utilities such as data builders, database, and formatter helpers.
@@ -48,6 +49,9 @@ Common environment variables:
 - `MS_WEB_BEARER_TOKEN`
 - `MS_DEV_BASE_URL`
 - `MS_PROD_BASE_URL`
+- `MS_POS_BASE_URL`
+- `POS_ADMIN_USERNAME`
+- `POS_ADMIN_PASSWORD`
 - `GMAIL_CLIENT_ID`
 - `GMAIL_CLIENT_SECRET`
 - `GMAIL_TEST_EMAIL`
@@ -89,6 +93,7 @@ npx playwright test --grep "@accounting"
 npx playwright test --grep "@supplier"
 npx playwright test --grep "@inventory"
 npx playwright test --grep "@document"
+npx playwright test --grep "@pos"
 ```
 
 Run specific tests by title text:
@@ -125,6 +130,7 @@ The repository has one workflow per module plus a full run workflow:
 - [.github/workflows/commercials-tests.yaml](./.github/workflows/commercials-tests.yaml)
 - [.github/workflows/document-tests.yaml](./.github/workflows/document-tests.yaml)
 - [.github/workflows/inventory-tests.yaml](./.github/workflows/inventory-tests.yaml)
+- [.github/workflows/pos-tests.yaml](./.github/workflows/pos-tests.yaml)
 - [.github/workflows/supplier-tests.yaml](./.github/workflows/supplier-tests.yaml)
 - [.github/workflows/usermanagement-tests.yaml](./.github/workflows/usermanagement-tests.yaml)
 - [.github/workflows/full-run-tests.yaml](./.github/workflows/full-run-tests.yaml)
@@ -160,5 +166,6 @@ That keeps PRs quiet while preserving the main-branch release summary.
 ## Useful notes
 
 - Tags such as `@auth`, `@accounting`, `@commercials`, `@document`, `@inventory`, `@supplier`, and `@usermanagement` are used to target module runs.
+- Tags such as `@pos` target the POS auth service suite.
 - The test suite is built around reusable services and helpers, so the same endpoint can be exercised from local runs, GitHub Actions, and Slack-reported CI runs.
 - If a run needs authenticated setup, make sure the auth variables are present before launching Playwright.

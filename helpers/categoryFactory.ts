@@ -13,6 +13,7 @@ import {
 export interface CategorySeed {
   name: string;
   publicId: string;
+  code?: string;
   category?: CategoryRecord;
 }
 
@@ -65,6 +66,14 @@ async function resolveCategoryPublicId(categoryApi: CategoryApi, token: string, 
   return publicId;
 }
 
+async function resolveCategoryCode(categoryApi: CategoryApi, token: string, publicId: string) {
+  const response = await categoryApi.getCategory(token, publicId);
+  expect(response.status).toBe(200);
+  const code = String(response.data?.categoryCode ?? '');
+  expect(code, `category response should include categoryCode: ${JSON.stringify(response.data)}`).toBeTruthy();
+  return code;
+}
+
 export async function createCategory(
   categoryApi: CategoryApi,
   token: string,
@@ -76,10 +85,12 @@ export async function createCategory(
 
   const publicId = String(response.data?.publicId ?? response.data?.categoryPublicId ?? '');
   const resolvedPublicId = publicId || (await resolveCategoryPublicId(categoryApi, token, name));
+  const code = String(response.data?.categoryCode ?? '') || (await resolveCategoryCode(categoryApi, token, resolvedPublicId));
 
   return {
     name,
     publicId: resolvedPublicId,
+    code: code || undefined,
     category: response.data,
   };
 }

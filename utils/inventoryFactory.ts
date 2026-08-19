@@ -47,6 +47,8 @@ export type WarehousePayload = {
   active?: boolean;
 };
 
+export type WarehouseType = 'Main' | 'Quarantine';
+
 export function buildSquareGeoJson(centerLat: number, centerLon: number, delta = 0.01): GeoJsonPolygon {
   return {
     type: 'Polygon',
@@ -185,6 +187,23 @@ export class InventoryFactory {
     expect(allowedStatuses).toContain(response.status());
   }
 
+  private buildWarehousePayload(
+    name: string,
+    regionPublicId: string,
+    warehouseType: WarehouseType,
+    active = true,
+  ): WarehousePayload {
+    return {
+      warehouseName: name,
+      warehouseType,
+      regionPublicId,
+      regions: [regionPublicId],
+      lat: '-6.1667',
+      lon: '39.2000',
+      ...(active ? {} : { active: false }),
+    };
+  }
+
   async createBranchSetup(token: string): Promise<BranchSetup> {
     const regionPublicId = await this.getFirstRegionPublicId(token);
     const country = await this.createCountry(token, 'Geofence Country');
@@ -209,30 +228,31 @@ export class InventoryFactory {
     this.branchSetup = undefined;
   }
 
+  async createWarehouseOfType(
+    token: string,
+    regionPublicId: string,
+    prefix: string,
+    warehouseType: WarehouseType,
+  ): Promise<CreatedEntity> {
+    const name = unique(prefix);
+    const response = await this.inventoryManagement.createWarehouse(
+      token,
+      this.buildWarehousePayload(name, regionPublicId, warehouseType),
+    );
+    expect([200, 201]).toContain(response.status());
+    return { name, publicId: publicIdFrom(await json(response)) };
+  }
+
   async createWarehouse(token: string, regionPublicId: string, prefix: string): Promise<CreatedEntity> {
     const name = unique(prefix);
-    const payloads: WarehousePayload[] = [
-      {
-        warehouseName: name,
-        warehouseType: 'Main',
-        regionPublicId,
-        regions: [regionPublicId],
-        lat: '-6.1667',
-        lon: '39.2000',
-      },
-      {
-        warehouseName: name,
-        warehouseType: 'Quarantine',
-        regionPublicId,
-        regions: [regionPublicId],
-        lat: '-6.1667',
-        lon: '39.2000',
-      },
-    ];
+    const payloads: WarehouseType[] = ['Main', 'Quarantine'];
 
     let lastResponse;
-    for (const [index, payload] of payloads.entries()) {
-      lastResponse = await this.inventoryManagement.createWarehouse(token, payload);
+    for (const [index, warehouseType] of payloads.entries()) {
+      lastResponse = await this.inventoryManagement.createWarehouse(
+        token,
+        this.buildWarehousePayload(name, regionPublicId, warehouseType),
+      );
       if ([200, 201].includes(lastResponse.status())) {
         return { name, publicId: publicIdFrom(await json(lastResponse)) };
       }
