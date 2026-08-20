@@ -214,13 +214,26 @@ export class ProductApi {
   }
 
   exportProducts(token: string, params?: QueryParams) {
-    return this.execute<unknown>(
-      'GET',
-      'exportProducts',
-      withQueryParams(_ProductRequests.products.export(), params),
-      token,
-      undefined,
-      [200],
-    );
+    const url = withQueryParams(_ProductRequests.products.export(), params);
+    const operation = 'exportProducts';
+    console.log(`[ProductApi] -> ${operation} GET ${url}`);
+
+    return this.send('GET', url, token).then(async response => {
+      const status = response.status();
+      const raw = await response.text();
+
+      console.log(`[ProductApi] <- ${operation} ${status} ${responsePreview(raw)}`);
+
+      if (status !== 200) {
+        throw new ProductApiError(operation, 'GET', url, status, raw);
+      }
+
+      return {
+        status,
+        data: raw,
+        raw,
+        headers: response.headers(),
+      } satisfies ProductApiResult<string>;
+    });
   }
 }

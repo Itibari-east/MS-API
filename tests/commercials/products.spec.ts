@@ -4,6 +4,25 @@ import { getTokenOrSkip, unique } from '../../helpers/testHelpers';
 import { serviceConstants } from '../../constants/endpoints';
 import { createProductBundle, publishProduct, expectProductDetails, fetchProductItems, expectProductItems, buildProductUpdatePayload, cleanupProduct } from '../../helpers/productFactory';
 
+function extractProductItems(body: unknown): Array<Record<string, unknown>> {
+  if (Array.isArray(body)) {
+    return body as Array<Record<string, unknown>>;
+  }
+
+  if (Array.isArray((body as any)?.content)) {
+    return (body as any).content as Array<Record<string, unknown>>;
+  }
+
+  return [];
+}
+
+function productMatches(seed: { publicId: string; name?: string; barcode?: string }) {
+  return (item: Record<string, unknown>) =>
+    String(item.publicId ?? '') === seed.publicId ||
+    String(item.name ?? '') === String(seed.name ?? '') ||
+    String(item.barcode ?? '') === String(seed.barcode ?? '');
+}
+
 test.describe.serial('@commercials Commercials Service - Products', () => {
   test.setTimeout(150000);
 
@@ -233,6 +252,7 @@ test.describe.serial('@commercials Commercials Service - Products', () => {
       status: serviceConstants.commercials.product.status.active,
     });
 
+    const firstDetails = await expectProductDetails(productApi, token, first);
     const firstPage = await fetchProductItems(productApi, token, {
       categoryCode: first.categoryCode,
       search: 'Product Filter',
@@ -266,6 +286,28 @@ test.describe.serial('@commercials Commercials Service - Products', () => {
       'expected filtered products to match the requested category and search scope',
     );
 
+    const barcodeMatches = await fetchProductItems(productApi, token, {
+      categoryCode: first.categoryCode,
+      search: first.barcode,
+      status: serviceConstants.commercials.product.status.active,
+      page: 0,
+      size: 20,
+      sort: 'name,ASC',
+    });
+    expectProductItems(barcodeMatches, productMatches(first), 'expected product to be discoverable by barcode search');
+
+    const skuSearch = String(firstDetails.sku ?? '').trim();
+    expect(skuSearch).toBeTruthy();
+    const skuMatches = await fetchProductItems(productApi, token, {
+      categoryCode: first.categoryCode,
+      search: skuSearch,
+      status: serviceConstants.commercials.product.status.active,
+      page: 0,
+      size: 20,
+      sort: 'name,ASC',
+    });
+    expectProductItems(skuMatches, productMatches({ publicId: first.publicId }), 'expected product to be discoverable by SKU search');
+
     await productApi.updateProductStatus(token, secondPublicId, {
       status: serviceConstants.commercials.product.status.inactive,
     });
@@ -281,6 +323,255 @@ test.describe.serial('@commercials Commercials Service - Products', () => {
       supplierApi,
       token,
       first,
+    );
+  });
+
+  test('keeps pending products in the approval queue and requires approval before status changes and delete', async ({
+    productApi,
+    accountingService,
+    commercialsService,
+    categoryApi,
+    classApi,
+    subClassApi,
+    packageUnitApi,
+    supplierApi,
+  }) => {
+    const token = getTokenOrSkip();
+    const product = await createProductBundle(
+      productApi,
+      accountingService,
+      commercialsService,
+      categoryApi,
+      classApi,
+      subClassApi,
+      packageUnitApi,
+      supplierApi,
+      token,
+      'Product Pending Approval',
+    );
+
+    const queueBeforeDelete = await productApi.listProductApprovals(token, {
+      search: product.name,
+      page: 0,
+      size: 20,
+      sort: 'createdDate,DESC',
+    });
+    expect(queueBeforeDelete.status).toBe(200);
+
+    const queueBeforeDeleteItems = extractProductItems(queueBeforeDelete.data);
+    expectProductItems(queueBeforeDeleteItems, productMatches(product), 'expected a pending product to appear in the approval queue');
+
+    await expect(productApi.deleteProduct(token, product.publicId)).rejects.toThrow(/409|inactive products can be deleted/i);
+
+    await expect(
+      productApi.updateProductStatus(token, product.publicId, {
+        status: serviceConstants.commercials.product.status.inactive,
+      }),
+    ).rejects.toThrow(/409|pending products cannot be activated here/i);
+
+    await publishProduct(productApi, token, product, 'Approved pending product for delete flow');
+
+    const inactiveRes = await productApi.updateProductStatus(token, product.publicId, {
+      status: serviceConstants.commercials.product.status.inactive,
+    });
+    expect(inactiveRes.status).toBe(200);
+
+    const deleteRes = await productApi.deleteProduct(token, product.publicId);
+    expect(deleteRes.status).toBe(204);
+
+    const queueAfterDelete = await productApi.listProductApprovals(token, {
+      search: product.name,
+      page: 0,
+      size: 20,
+      sort: 'createdDate,DESC',
+    });
+    expect(queueAfterDelete.status).toBe(200);
+    const queueAfterDeleteItems = extractProductItems(queueAfterDelete.data);
+    expect(queueAfterDeleteItems.some(productMatches(product))).toBeFalsy();
+
+    await cleanupProduct(
+      productApi,
+      accountingService,
+      commercialsService,
+      categoryApi,
+      classApi,
+      subClassApi,
+      packageUnitApi,
+      supplierApi,
+      token,
+      product,
+    );
+  });
+
+  test('exports approved products as a downloadable feed', async ({
+    productApi,
+    accountingService,
+    commercialsService,
+    categoryApi,
+    classApi,
+    subClassApi,
+    packageUnitApi,
+    supplierApi,
+  }) => {
+    const token = getTokenOrSkip();
+    const product = await createProductBundle(
+      productApi,
+      accountingService,
+      commercialsService,
+      categoryApi,
+      classApi,
+      subClassApi,
+      packageUnitApi,
+      supplierApi,
+      token,
+      'Product Export',
+    );
+
+    await publishProduct(productApi, token, product);
+
+    const exportRes = await productApi.exportProducts(token, {
+      categoryCode: product.categoryCode,
+      search: product.name,
+      status: serviceConstants.commercials.product.status.active,
+      page: 0,
+      size: 20,
+      sort: 'name,ASC',
+      exportType: 'PDF',
+    });
+    expect(exportRes.status).toBe(200);
+    expect(String(exportRes.raw ?? '').trim()).toContain('%PDF');
+    expect(String(exportRes.headers['content-type'] ?? '').toLowerCase()).toContain('pdf');
+
+    await cleanupProduct(
+      productApi,
+      accountingService,
+      commercialsService,
+      categoryApi,
+      classApi,
+      subClassApi,
+      packageUnitApi,
+      supplierApi,
+      token,
+      product,
+    );
+  });
+
+  test('documents duplicate barcode handling as a known backend gap', async ({
+    productApi,
+    accountingService,
+    commercialsService,
+    categoryApi,
+    classApi,
+    subClassApi,
+    packageUnitApi,
+    supplierApi,
+  }) => {
+    const token = getTokenOrSkip();
+    const first = await createProductBundle(
+      productApi,
+      accountingService,
+      commercialsService,
+      categoryApi,
+      classApi,
+      subClassApi,
+      packageUnitApi,
+      supplierApi,
+      token,
+      'Product Duplicate Barcode',
+    );
+
+    const duplicate = await productApi.createProduct(
+      token,
+      buildProductUpdatePayload(first, {
+        name: unique('Duplicate Barcode Product'),
+        barcode: first.barcode,
+      }),
+    );
+    expect(duplicate.status).toBe(201);
+    expect(duplicate.data.barcode).toBe(first.barcode);
+
+    const duplicatePublicId = String(duplicate.data.publicId ?? '');
+    expect(duplicatePublicId).toBeTruthy();
+    await productApi.approveProduct(token, duplicatePublicId, {
+      approved: true,
+      comment: 'Approved duplicate barcode product for cleanup',
+    });
+    await productApi.updateProductStatus(token, duplicatePublicId, {
+      status: serviceConstants.commercials.product.status.inactive,
+    });
+    await productApi.deleteProduct(token, duplicatePublicId);
+
+    await cleanupProduct(
+      productApi,
+      accountingService,
+      commercialsService,
+      categoryApi,
+      classApi,
+      subClassApi,
+      packageUnitApi,
+      supplierApi,
+      token,
+      first,
+    );
+  });
+
+  test('rejects write operations for unknown product ids', async ({
+    productApi,
+    accountingService,
+    commercialsService,
+    categoryApi,
+    classApi,
+    subClassApi,
+    packageUnitApi,
+    supplierApi,
+  }) => {
+    const token = getTokenOrSkip();
+    const product = await createProductBundle(
+      productApi,
+      accountingService,
+      commercialsService,
+      categoryApi,
+      classApi,
+      subClassApi,
+      packageUnitApi,
+      supplierApi,
+      token,
+      'Product Invalid Id',
+    );
+
+    const invalidId = '00000000-0000-0000-0000-000000000000';
+    await expect(
+      productApi.updateProduct(token, invalidId, buildProductUpdatePayload(product, { name: unique('Invalid Update') })),
+    ).rejects.toThrow(/404|not found/i);
+    await expect(
+      productApi.updateProductStatus(token, invalidId, {
+        status: serviceConstants.commercials.product.status.inactive,
+      }),
+    ).rejects.toThrow(/404|not found/i);
+    await expect(
+      productApi.updateProductBestSeller(token, invalidId, {
+        bestSeller: true,
+      }),
+    ).rejects.toThrow(/404|not found/i);
+    await expect(
+      productApi.approveProduct(token, invalidId, {
+        approved: true,
+        comment: 'Invalid approval id',
+      }),
+    ).rejects.toThrow(/404|not found/i);
+    await expect(productApi.deleteProduct(token, invalidId)).rejects.toThrow(/404|not found/i);
+
+    await cleanupProduct(
+      productApi,
+      accountingService,
+      commercialsService,
+      categoryApi,
+      classApi,
+      subClassApi,
+      packageUnitApi,
+      supplierApi,
+      token,
+      product,
     );
   });
 

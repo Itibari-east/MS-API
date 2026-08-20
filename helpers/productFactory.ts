@@ -17,6 +17,7 @@ import { TaxCodeResponse } from '../types/accounting';
 export interface ProductSeed {
   name: string;
   publicId: string;
+  barcode: string;
   categoryCode: string;
   categoryPublicId: string;
   classPublicId: string;
@@ -139,7 +140,7 @@ export function buildProductCreatePayload(
   const subclassPublicId = overrides?.subclassPublicId ?? seed.subclassPublicId ?? undefined;
   const base = {
     name: seed.name,
-    barcode: `${Date.now()}${Math.floor(Math.random() * 1000)}`.slice(0, 13),
+    barcode: overrides?.barcode ?? seed.barcode ?? `${Date.now()}${Math.floor(Math.random() * 1000)}`.slice(0, 13),
     buyingPrice: 96000,
     sellingPrice: 100000,
     taxMappingPublicId: seed.taxMappingPublicId,
@@ -239,6 +240,7 @@ export async function createProductBundle(
   namePrefix = 'Product Automation',
 ): Promise<ProductSeed> {
   const name = unique(namePrefix);
+  const barcode = `${Date.now()}${Math.floor(Math.random() * 1000)}`.slice(0, 13);
   const hierarchy = await resolveExistingHierarchy(categoryApi, classApi, subClassApi, token);
   const uom = await createBaseUom(commercialsService as any, token, `${namePrefix} UOM`);
   const packageUnit = await createPackageUnit(packageUnitApi, token, {
@@ -254,6 +256,7 @@ export async function createProductBundle(
   const createPayload = buildProductCreatePayload({
     name,
     publicId: '',
+    barcode,
     categoryCode: hierarchy.categoryCode,
     categoryPublicId: hierarchy.categoryPublicId,
     classPublicId: hierarchy.classPublicId,
@@ -278,6 +281,7 @@ export async function createProductBundle(
   return {
     name,
     publicId,
+    barcode,
     categoryCode: hierarchy.categoryCode,
     categoryPublicId: hierarchy.categoryPublicId,
     classPublicId: hierarchy.classPublicId,
