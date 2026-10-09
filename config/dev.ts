@@ -9,6 +9,8 @@ export const SERVICE_ENDPOINTS = {
   commercials: joinUrl(DEV_BASE_URL, 'commercials-service'),
   documentService: joinUrl(DEV_BASE_URL, 'document-service'),
   logistics: joinUrl(DEV_BASE_URL, 'logistics-service'),
+  // The Order Service OpenAPI document declares the gateway root as its server.
+  orderService: DEV_BASE_URL,
 };
 
 export const ENDPOINTS = {

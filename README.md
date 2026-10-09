@@ -46,6 +46,9 @@ Common environment variables:
 - `MS_USER_PASSWORD`
 - `MS_TOTP_SECRET`
 - `MS_WEB_BEARER_TOKEN`
+- `MS_SALES_AGENT_MANAGER_PUBLIC_ID` - existing manager used by the Sales Agent lifecycle test
+- `MS_SALES_AGENT_REGION_PUBLIC_ID` - existing region assigned to the Sales Agent lifecycle test
+- `MS_SALES_AGENT_GEOFENCE_PUBLIC_ID` - existing geofence/zone assigned to the Sales Agent lifecycle test
 - `MS_DEV_BASE_URL`
 - `MS_PROD_BASE_URL`
 - `GMAIL_CLIENT_ID`
@@ -80,6 +83,7 @@ Run a specific file:
 
 ```bash
 npx playwright test tests/accounting/banks.spec.ts
+npx playwright test tests/orders/salesAgents.spec.ts
 ```
 
 Run a specific module by tag:

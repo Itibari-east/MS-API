@@ -1,0 +1,1500 @@
+{
+  "info": {
+    "name": "Order Service — Dev",
+    "description": "Generated from the Order Service OpenAPI 3.1.0. The source document currently labels itself \"Logistics Service\". Set bearerToken and identifier variables before sending protected or entity-specific requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{bearerToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api-micro-dev.itibari.io",
+      "type": "string"
+    },
+    {
+      "key": "bearerToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "publicId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "storePublicId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Sales Agents",
+      "item": [
+        {
+          "name": "GET /salesAgents — Fetch all sales agents",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/salesAgents",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "salesAgents"
+              ],
+              "query": [
+                {
+                  "key": "searchParam",
+                  "value": "string",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "regionPublicId",
+                  "value": "{{publicId}}",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "ACTIVE",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "from",
+                  "value": "2026-01-01",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "to",
+                  "value": "2026-01-01",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "geofencePublicIds",
+                  "value": "{{publicId}}",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "pageable",
+                  "value": "page=0&size=20",
+                  "description": "",
+                  "disabled": false
+                }
+              ],
+              "variable": []
+            },
+            "description": "Fetch all sales agents"
+          }
+        },
+        {
+          "name": "POST /salesAgents — Create sales agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/salesAgents",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "salesAgents"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "Create sales agent",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"string\",\n  \"lastName\": \"string\",\n  \"managerPublicId\": \"{{publicId}}\",\n  \"phoneNumber\": \"string\",\n  \"email\": \"string\",\n  \"regionPublicId\": \"{{publicId}}\",\n  \"address\": \"string\",\n  \"street\": \"string\",\n  \"identificationType\": \"NATIONAL_ID\",\n  \"identificationNumber\": \"string\",\n  \"geofencePublicIds\": [\n    \"{{publicId}}\"\n  ],\n  \"sendOneTimePassword\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PATCH /salesAgents/{publicId}/actions — Activate or deactivate sales agent",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/salesAgents/{{publicId}}/actions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "salesAgents",
+                "{{publicId}}",
+                "actions"
+              ],
+              "query": [
+                {
+                  "key": "action",
+                  "value": "ACTIVATE",
+                  "description": "",
+                  "disabled": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                }
+              ]
+            },
+            "description": "Activate or deactivate sales agent",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"ACTIVATE\",\n  \"reasonPublicId\": \"{{publicId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /salesAgents/{publicId} — Fetch sales agent",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/salesAgents/{{publicId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "salesAgents",
+                "{{publicId}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                }
+              ]
+            },
+            "description": "Fetch sales agent"
+          }
+        },
+        {
+          "name": "DELETE /salesAgents/{publicId} — Delete sales agent",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/salesAgents/{{publicId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "salesAgents",
+                "{{publicId}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                }
+              ]
+            },
+            "description": "Delete sales agent"
+          }
+        },
+        {
+          "name": "GET /salesAgents/{publicId}/visits — Fetch sales agent customer visits",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/salesAgents/{{publicId}}/visits",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "salesAgents",
+                "{{publicId}}",
+                "visits"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "string",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "customerStatus",
+                  "value": "string",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "geofencePublicId",
+                  "value": "{{publicId}}",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "from",
+                  "value": "2026-01-01",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "to",
+                  "value": "2026-01-01",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "pageable",
+                  "value": "page=0&size=20",
+                  "description": "",
+                  "disabled": false
+                }
+              ],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                }
+              ]
+            },
+            "description": "Fetch sales agent customer visits"
+          }
+        },
+        {
+          "name": "GET /salesAgents/{publicId}/visits/export — Export sales agent customer visits",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/salesAgents/{{publicId}}/visits/export",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "salesAgents",
+                "{{publicId}}",
+                "visits",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "EXCEL",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "search",
+                  "value": "string",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "customerStatus",
+                  "value": "string",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "geofencePublicId",
+                  "value": "{{publicId}}",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "from",
+                  "value": "2026-01-01",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "to",
+                  "value": "2026-01-01",
+                  "description": "",
+                  "disabled": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                }
+              ]
+            },
+            "description": "Export sales agent customer visits"
+          }
+        },
+        {
+          "name": "GET /salesAgents/{publicId}/visit-kpis — Fetch sales agent visit KPIs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/salesAgents/{{publicId}}/visit-kpis",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "salesAgents",
+                "{{publicId}}",
+                "visit-kpis"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                }
+              ]
+            },
+            "description": "Fetch sales agent visit KPIs"
+          }
+        },
+        {
+          "name": "GET /salesAgents/visits — Fetch customer visit summaries",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/salesAgents/visits",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "salesAgents",
+                "visits"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "string",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "regionPublicId",
+                  "value": "{{publicId}}",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "ACTIVE",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "lastVisitFrom",
+                  "value": "2026-01-01",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "lastVisitTo",
+                  "value": "2026-01-01",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "pageable",
+                  "value": "page=0&size=20",
+                  "description": "",
+                  "disabled": false
+                }
+              ],
+              "variable": []
+            },
+            "description": "Fetch customer visit summaries"
+          }
+        },
+        {
+          "name": "GET /salesAgents/visits/export — Export customer visit summaries",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/salesAgents/visits/export",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "salesAgents",
+                "visits",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "EXCEL",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "search",
+                  "value": "string",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "regionPublicId",
+                  "value": "{{publicId}}",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "ACTIVE",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "lastVisitFrom",
+                  "value": "2026-01-01",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "lastVisitTo",
+                  "value": "2026-01-01",
+                  "description": "",
+                  "disabled": true
+                }
+              ],
+              "variable": []
+            },
+            "description": "Export customer visit summaries"
+          }
+        },
+        {
+          "name": "GET /salesAgents/myProfile — Fetch sales agent profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/salesAgents/myProfile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "salesAgents",
+                "myProfile"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "Fetch sales agent profile"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "GET /customers — Fetch customers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "string",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "ACTIVE",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "regionPublicId",
+                  "value": "{{publicId}}",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "customerType",
+                  "value": "REGULAR",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "salesChannel",
+                  "value": "PORTAL",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "pageable",
+                  "value": "page=0&size=20",
+                  "description": "",
+                  "disabled": false
+                }
+              ],
+              "variable": []
+            },
+            "description": "Fetch customers"
+          }
+        },
+        {
+          "name": "POST /customers — Create customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "Create customer",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"phoneNumber\": \"string\",\n  \"alternativePhoneNumber\": \"string\",\n  \"email\": \"string\",\n  \"customerType\": \"REGULAR\",\n  \"regionPublicId\": \"{{publicId}}\",\n  \"wardPublicId\": \"{{publicId}}\",\n  \"address\": \"string\",\n  \"street\": \"string\",\n  \"landmark\": \"string\",\n  \"storeName\": \"string\",\n  \"identificationNumber\": \"string\",\n  \"tin\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /customers/{publicId}/stores — Fetch customer stores",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{publicId}}/stores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "{{publicId}}",
+                "stores"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                }
+              ]
+            },
+            "description": "Fetch customer stores"
+          }
+        },
+        {
+          "name": "POST /customers/{publicId}/stores — Create customer store",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{publicId}}/stores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "{{publicId}}",
+                "stores"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                }
+              ]
+            },
+            "description": "Create customer store",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"regionPublicId\": \"{{publicId}}\",\n  \"phoneNumber\": \"string\",\n  \"managerPublicId\": \"{{publicId}}\",\n  \"latitude\": 0,\n  \"longitude\": 0,\n  \"storeType\": \"MAIN_BRANCH\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /customers/{publicId}/stores/{storePublicId}/status — Activate or deactivate customer store",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{publicId}}/stores/{{storePublicId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "{{publicId}}",
+                "stores",
+                "{{storePublicId}}",
+                "status"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                },
+                {
+                  "key": "storePublicId",
+                  "value": "{{storePublicId}}"
+                }
+              ]
+            },
+            "description": "Activate or deactivate customer store",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"ACTIVATE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /customers/{publicId}/kyc — Fetch customer KYC details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{publicId}}/kyc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "{{publicId}}",
+                "kyc"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                }
+              ]
+            },
+            "description": "Fetch customer KYC details"
+          }
+        },
+        {
+          "name": "POST /customers/{publicId}/kyc — Approve or reject customer KYC",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{publicId}}/kyc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "{{publicId}}",
+                "kyc"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                }
+              ]
+            },
+            "description": "Approve or reject customer KYC",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"APPROVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "PATCH /customers/{publicId}/kyc — Update customer KYC fields",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{publicId}}/kyc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "{{publicId}}",
+                "kyc"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                }
+              ]
+            },
+            "description": "Update customer KYC fields",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"businessLicenseNumber\": \"string\",\n  \"tin\": \"string\",\n  \"guarantorName\": \"string\",\n  \"guarantorPhone\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /customers/export — Export customer list rows (Excel/PDF)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/export",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "export"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "Export customer list rows (Excel/PDF)",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"format\": \"EXCEL\",\n  \"rows\": [\n    {\n      \"name\": \"string\",\n      \"customerType\": \"string\",\n      \"phoneNumber\": \"string\",\n      \"registrationDate\": \"string\",\n      \"salesChannel\": \"string\",\n      \"district\": \"string\",\n      \"zone\": \"string\",\n      \"landmark\": \"string\",\n      \"registeredBy\": \"string\",\n      \"status\": \"string\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /customers/{publicId} — Fetch customer",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{publicId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "{{publicId}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                }
+              ]
+            },
+            "description": "Fetch customer"
+          }
+        },
+        {
+          "name": "DELETE /customers/{publicId} — Delete customer",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{publicId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "{{publicId}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                }
+              ]
+            },
+            "description": "Delete customer"
+          }
+        },
+        {
+          "name": "PATCH /customers/{publicId} — Update customer",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{publicId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "{{publicId}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                }
+              ]
+            },
+            "description": "Update customer",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"phoneNumber\": \"string\",\n  \"alternativePhoneNumber\": \"string\",\n  \"email\": \"string\",\n  \"customerType\": \"REGULAR\",\n  \"regionPublicId\": \"{{publicId}}\",\n  \"wardPublicId\": \"{{publicId}}\",\n  \"address\": \"string\",\n  \"street\": \"string\",\n  \"landmark\": \"string\",\n  \"storeName\": \"string\",\n  \"identificationNumber\": \"string\",\n  \"tin\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /customers/{publicId}/stores/{storePublicId} — Fetch customer store",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{publicId}}/stores/{{storePublicId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "{{publicId}}",
+                "stores",
+                "{{storePublicId}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                },
+                {
+                  "key": "storePublicId",
+                  "value": "{{storePublicId}}"
+                }
+              ]
+            },
+            "description": "Fetch customer store"
+          }
+        },
+        {
+          "name": "DELETE /customers/{publicId}/stores/{storePublicId} — Delete customer store",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{publicId}}/stores/{{storePublicId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "{{publicId}}",
+                "stores",
+                "{{storePublicId}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                },
+                {
+                  "key": "storePublicId",
+                  "value": "{{storePublicId}}"
+                }
+              ]
+            },
+            "description": "Delete customer store"
+          }
+        },
+        {
+          "name": "PATCH /customers/{publicId}/stores/{storePublicId} — Update customer store",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{publicId}}/stores/{{storePublicId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "{{publicId}}",
+                "stores",
+                "{{storePublicId}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                },
+                {
+                  "key": "storePublicId",
+                  "value": "{{storePublicId}}"
+                }
+              ]
+            },
+            "description": "Update customer store",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"regionPublicId\": \"{{publicId}}\",\n  \"phoneNumber\": \"string\",\n  \"managerPublicId\": \"{{publicId}}\",\n  \"latitude\": 0,\n  \"longitude\": 0,\n  \"storeType\": \"MAIN_BRANCH\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /customers/{publicId}/wallet — Fetch customer wallet",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{publicId}}/wallet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "{{publicId}}",
+                "wallet"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                }
+              ]
+            },
+            "description": "Fetch customer wallet"
+          }
+        },
+        {
+          "name": "GET /customers/{publicId}/view — Fetch customer view header",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{publicId}}/view",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "{{publicId}}",
+                "view"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                }
+              ]
+            },
+            "description": "Fetch customer view header"
+          }
+        },
+        {
+          "name": "GET /customers/{publicId}/purchase-activity — Fetch customer purchase activity",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{publicId}}/purchase-activity",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "{{publicId}}",
+                "purchase-activity"
+              ],
+              "query": [
+                {
+                  "key": "bucket",
+                  "value": "MONTHLY",
+                  "description": "",
+                  "disabled": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                }
+              ]
+            },
+            "description": "Fetch customer purchase activity"
+          }
+        },
+        {
+          "name": "GET /customers/{publicId}/location-points — Fetch customer map points",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{publicId}}/location-points",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "{{publicId}}",
+                "location-points"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                }
+              ]
+            },
+            "description": "Fetch customer map points"
+          }
+        },
+        {
+          "name": "GET /customers/{publicId}/credit — Fetch customer credit details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{publicId}}/credit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "{{publicId}}",
+                "credit"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                }
+              ]
+            },
+            "description": "Fetch customer credit details"
+          }
+        },
+        {
+          "name": "GET /customers/{publicId}/credit/export — Export customer credit rows (Excel/PDF)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers/{{publicId}}/credit/export",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "{{publicId}}",
+                "credit",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "EXCEL",
+                  "description": "",
+                  "disabled": false
+                }
+              ],
+              "variable": [
+                {
+                  "key": "publicId",
+                  "value": "{{publicId}}"
+                }
+              ]
+            },
+            "description": "Export customer credit rows (Excel/PDF)"
+          }
+        },
+        {
+          "name": "GET /customers/summary — Fetch customer KPI counts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers/summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "summary"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "Fetch customer KPI counts"
+          }
+        },
+        {
+          "name": "GET /customers/rewards — Fetch rewards table",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers/rewards",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "rewards"
+              ],
+              "query": [
+                {
+                  "key": "pageable",
+                  "value": "page=0&size=20",
+                  "description": "",
+                  "disabled": false
+                }
+              ],
+              "variable": []
+            },
+            "description": "Fetch rewards table"
+          }
+        },
+        {
+          "name": "GET /customers/rewards/top — Fetch top rewards customers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers/rewards/top",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "rewards",
+                "top"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "Fetch top rewards customers"
+          }
+        },
+        {
+          "name": "GET /customers/rewards/tiers — Fetch rewards tier counts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers/rewards/tiers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "rewards",
+                "tiers"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "Fetch rewards tier counts"
+          }
+        },
+        {
+          "name": "GET /customers/rewards/summary — Fetch rewards KPI counts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers/rewards/summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "rewards",
+                "summary"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "Fetch rewards KPI counts"
+          }
+        },
+        {
+          "name": "GET /customers/map-points — Fetch customer map points",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers/map-points",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "map-points"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "string",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "ACTIVE",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "regionPublicId",
+                  "value": "{{publicId}}",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "customerType",
+                  "value": "REGULAR",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "salesChannel",
+                  "value": "PORTAL",
+                  "description": "",
+                  "disabled": true
+                }
+              ],
+              "variable": []
+            },
+            "description": "Fetch customer map points"
+          }
+        },
+        {
+          "name": "GET /customers/buying-trends — Fetch buying-trends table",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers/buying-trends",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "buying-trends"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "string",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "regionPublicId",
+                  "value": "{{publicId}}",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "pageable",
+                  "value": "page=0&size=20",
+                  "description": "",
+                  "disabled": false
+                }
+              ],
+              "variable": []
+            },
+            "description": "Fetch buying-trends table"
+          }
+        },
+        {
+          "name": "GET /customers/buying-trends/top-categories — Fetch buying-trends top categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers/buying-trends/top-categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "buying-trends",
+                "top-categories"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "description": "Fetch buying-trends top categories"
+          }
+        },
+        {
+          "name": "GET /customers/buying-trends/export — Export buying-trends table (Excel/PDF)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/customers/buying-trends/export",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers",
+                "buying-trends",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "EXCEL",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "search",
+                  "value": "string",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "regionPublicId",
+                  "value": "{{publicId}}",
+                  "description": "",
+                  "disabled": true
+                }
+              ],
+              "variable": []
+            },
+            "description": "Export buying-trends table (Excel/PDF)"
+          }
+        }
+      ]
+    }
+  ]
+}
