@@ -1,0 +1,1363 @@
+{
+  "info": {
+    "name": "Itibari POS - Complete Sales Module API Collection (Filters, Stats, Search, POS Terminal & Backend Defect Catalog)",
+    "_postman_id": "itibari-sales-filters-20261013",
+    "description": "Comprehensive Postman collection for frontend and backend engineers covering the entire Itibari Sales module:\n1. Commercial Invoicing (/sales/invoice-sales) - Invoices, Proformas, Quotations, live KPI stats, status filters, search, and export route collisions.\n2. Retail POS Terminal Sales History (/pos) - Cash & Credit orders, status filters (UPPERCASE vs Title-case bug), date range filters, summary KPIs, cashier shift stats, and export failure.\n3. POS Register Checkout & Customer Onboarding (/pos) - Product pricing catalog, category filters, customer onboarding, order creation, cash payment, and receipt generation.\n4. POS Returns Management (/pos) - Return reasons configuration, returns audit log, and return note processing.\n5. Loyalty Program & Discount Policies (/pos-settings) - Tier configuration and storewide discount rules.\n6. User Profile & Auth Gateway (/pos/users) - Working replacement for broken /staff/profile endpoint.\n\nPre-configured with DEV environment variables ({{baseUrl}} and valid JWT {{bearerToken}}).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api-micro-dev.itibari.io/api/v1/pos",
+      "type": "string",
+      "description": "POS Dev Microservices API Base URL"
+    },
+    {
+      "key": "bearerToken",
+      "value": "eyJraWQiOiI1OWM2MmM2OS0yZTFiLTQ0ZmUtYjI2MS1iZDA2OTZhZTk5ZjAiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJkLmNoaXJjaGlyQGl0aWJhcmkuaW8iLCJyb2xlcyI6WyJkMmViMzlkMi1iNWNkLTRmYTEtODM2MS1hNmVhZmZiNGVjMDQiLCJmNWVkNjY5MS0wNDNhLTRkZDktOTg4Yi0zMjJmMzE3YzRjNDUiLCJmYzUzM2JhNi0yMGY0LTQzZGItYjVjYS0yMDdiMTkyNWZlMTYiXSwiaXNzIjoiaXRpYmFyaS1hdXRob3JpemF0aW9uLXNlcnZpY2UiLCJjaGFubmVsIjoiV0VCIiwid2FyZWhvdXNlcyI6W10sImFkbWluIjp0cnVlLCJzdWJzY3JpcHRpb24iOnRydWUsImF1dGhvcml0aWVzIjpbIkNSRUFURV9BQ0NPVU5UIiwiQ1JFQVRFX0FDQ09VTlRTIiwiQ1JFQVRFX0NBVEVHT1JZIiwiQ1JFQVRFX1RBWF9DT0RFIiwiQ1JFQVRFX1VTRVIiLCJERUxFVEVfQUNDT1VOVCIsIkRFTEVURV9BQ0NPVU5UUyIsIkRFTEVURV9DQVRFR09SWSIsIkRFTEVURV9UQVhfQ09ERSIsIkRFTEVURV9VU0VSIiwiTUFOQUdFX0FDQ09VTlRTIiwiUE9TX1ZJRVdfVVNFUlMiLCJSRUFEX0FDQ09VTlQiLCJSRUFEX1RBWF9DT0RFIiwiVVBEQVRFX0FDQ09VTlQiLCJVUERBVEVfQUNDT1VOVFMiLCJVUERBVEVfQ0FURUdPUlkiLCJVUERBVEVfVEFYX0NPREUiLCJVUERBVEVfVVNFUiIsIlZJRVdfQUNDT1VOVFMiLCJWSUVXX1VTRVIiLCJWSUVXX1VTRVJTIiwiV1JJVEVfQUNDT1VOVCIsInJlYWRfYWNjb3VudHMiLCJyZWFkX3JvbGVzIiwicmVhZF91c2VyIiwid3JpdGVfYWNjb3VudHMiLCJGQUNUT1JfUEFTU1dPUkQiXSwicHVibGljX2lkIjoiODRmOGZjNGEtOWE0ZS00MWMxLWIyNDctYTIwYWQ1ZTVmMjJiIiwidG9rZW5fZmxvdyI6IkNPUkVfQ0hBTk5FTCIsImZ1bGxfbmFtZSI6IkRlbm5pcyBDaGlyQ2hpciIsInVzZXJfaWQiOjY0LCJmb3JjZV9wYXNzd29yZF9yZXNldCI6ZmFsc2UsInNob3BzIjpbIjBmN2I4MzMzLTgzMGUtNGJlMC05YzYzLTEzN2JhZjY3ZjVjZSIsIjc3ODE2ODY0LTk1M2UtNGY0Zi05MWMyLTVhZWFiY2ZhNWJlZCIsIjAzZGQ4ODg4LTgwNjItNGMzNi1iYTE5LTMzZDc1ZWZkMTEyMCIsImRjMzVkNjY3LTQzMDctNDM0NC1hNjgxLTA4MWNkZjQ4MGZkMCIsIjlmODhmYjI3LWNkNjItNGMxNC1hMDQ1LTUwNWFmM2UxNzA1YiIsIjY3MmQ3OTMwLTZmZjktNDRiNS04OTM1LWIyNGExNzQwNTYyMCIsImQyMzY4N2M4LWU0NzAtNGZkZC05ZDBhLTNlMzNjNDgyNThmYiIsIjA1ZmY2M2I4LTg4ODktNGQ5Ni05MGQ0LTE2MmI5ZjhkYjJjZiIsImNjNGUxYzMwLWExMzEtNDcxNy1hZGU1LWUxZjYzM2E4ODU0NCIsImIzYmEzZjFhLTM5MGYtNDU1OS05ZGRmLTRiOGY2Nzg3MmM1ZCIsImJkNzM2ZTExLWE0YWUtNGY5OS04OTkxLTJiNjkwMjU3N2MxMSIsIjUzMWU0NTk3LTU4ZWMtNDJiYS04YmE2LTVmY2Y1NDRkODk0NiIsIjA4NTUzMDY0LWFkNDMtNDNmYi04MDIzLTRiNmI3YjNlN2Y0NSIsIjhkZTQzZjVkLTcxNDctNGQzNC1hMzQ3LTYzODEwZTdkZDdiOSIsImFmMDhjNWExLTRkMGEtNDZlNy1hYTg2LThhZTQ1MGExYTBlYSIsIjE0YTljMTJjLWVkZGUtNDY1Yy05MDViLWYzNWY1YWJmZGVlZSIsIjNiMGNhNjI0LWZjMWMtNDA2MC04YzY2LThhMWY5MWUxM2I5NyIsIjllZjllOTE4LTY3NDgtNGM5MC1iYzUzLTNmNWI2ODRkZmZmOSIsImU3ZmYwYmY4LTM3YmYtNDc4NC1hZjE5LTU4ZjQ2ZDIzNWJkOSIsImExZGQzZjlmLTJmZTEtNDBmOS1iNGQ0LTgzN2U3ZGQ0YThkZiIsIjBiY2EyYjhmLTZhNjYtNGU4Yi1hZjkxLWYxZGJlODQ4NThhMyIsIjhjYjY1NzBjLWJjYzMtNDdkMS1hNGIyLTdjYTMyNDkzYWY3YyIsImRhOTBiY2ZlLTU1NzUtNDc3NC1iYzI3LWYxNjA0YzA2NGFiMCJdLCJwaG9uZV9udW1iZXIiOiIrMjU1NzA1NTE1NDc2IiwiYWN0aXZlX3Nob3AiOiJhMWRkM2Y5Zi0yZmUxLTQwZjktYjRkNC04MzdlN2RkNGE4ZGYiLCJleHAiOjE3OTE5OTU1MDUsImlhdCI6MTc5MTkwOTEwNX0.NNaKCQ4mfYWHqHtN1EnViZJVYBUKnB777lHs-AP4O1ousFV-ONqhSymTblxHdCEflvvF3ZjVR30hrhWQZjIbfdClWFZx4PmfcT3mNdtEilzhjJ1376ON438p4l5AsMd1OHIdmFpKtnB8qv1f-DpOoekEm_LD5laNCRSdjX7UnCtr9ycxHESb16NP0h6qI_H1Znmvx72RZwk_5EI9RybKybWwkAgiFknepSU63vrg0vstQ6RaWbkUueZ2k6soycyejB126UCc-2k4N1dyWdgfKu2zfONzUD0BjSXt7V-bX3ly3uxCS6_yRloNJihSH-AVNjWBGH9KdPA58IqnQ7sOFTmjfKCmybJZ1sbb2qH056617DcHgTVAqlILYDVL6LSmgKK2672jvivB0eXduPTqB7D1ZyjYqYB-OXLJJJ-Bm46ox3dBXUsumdnWrfjKUbQ2fiqXDsl77SkpQeZg-5QHda649gcmqym9f-6zsQayu1lGcRyJGLeaPa9BS7dguSGEkzX5RQrIz7k2zhc9v61xTmTJ4YQhKBHTv5e7SUMzi8tHyNArOPB1YKa36b7fY4W1KsF5_c1_SedMfG3jA_fM-kbWjtYd24GXm5UF33AOKbeqBP3RxvZue77ZIsVbMkqooRItfVVyh39S6xBtUAaeybW-0dJbi9MJdhLdEgi_W2k",
+      "type": "string",
+      "description": "Active JWT Bearer Token (preloaded with DEV session)"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{bearerToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "1. Commercial Invoicing & Invoice Sales (/sales/invoice-sales)",
+      "description": "Endpoints for querying and filtering Commercial Invoices, Proformas, Quotations, and summary KPI analytics.",
+      "item": [
+        {
+          "name": "1.1 GET Sales Invoices - Filter Status: PENDING",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sales-invoices?status=PENDING&page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sales-invoices"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "PENDING",
+                  "description": "Filter status: PENDING | COMPLETED | CANCELLED"
+                },
+                {
+                  "key": "page",
+                  "value": "0",
+                  "description": "Page index (0-based)"
+                },
+                {
+                  "key": "size",
+                  "value": "10",
+                  "description": "Number of records per page"
+                }
+              ]
+            },
+            "description": "Retrieve all pending sales invoices. On DEV, returns 15 pending records."
+          }
+        },
+        {
+          "name": "1.2 GET Sales Invoices - Filter Status: COMPLETED",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sales-invoices?status=COMPLETED&page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sales-invoices"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "COMPLETED",
+                  "description": "Filter status: COMPLETED"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Retrieve completed sales invoices."
+          }
+        },
+        {
+          "name": "1.3 GET Sales Invoices - Filter Status: CANCELLED",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sales-invoices?status=CANCELLED&page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sales-invoices"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "CANCELLED",
+                  "description": "Filter status: CANCELLED"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Retrieve cancelled sales invoices. On DEV, returns 2 cancelled records."
+          }
+        },
+        {
+          "name": "1.4 GET Sales Invoices - Live KPI Summary Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sales-invoices/stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sales-invoices",
+                "stats"
+              ]
+            },
+            "description": "Returns live metrics for averageOrderValue, completedSales, pendingInvoices, cancelledSales, and comparedTo date. Frontend currently hardcodes mocks."
+          }
+        },
+        {
+          "name": "1.5 GET Proforma Invoices - Filter Status: PENDING",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/proforma-invoices?status=PENDING&page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proforma-invoices"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "PENDING"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Retrieve pending proforma invoices. On DEV, returns 4 records."
+          }
+        },
+        {
+          "name": "1.6 GET Quotations - Filter Status: PENDING",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/quotations?status=PENDING&page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "quotations"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "PENDING"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Retrieve pending quotations. On DEV, returns 6 records."
+          }
+        },
+        {
+          "name": "1.7 GET Export Quotations (Backend 400 Route Collision)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/quotations/export?format=xlsx",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "quotations",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "xlsx"
+                }
+              ]
+            },
+            "description": "Demonstrates DEFECT-081: Crashes with HTTP 400 (Invalid UUID string: export) because @GetMapping(/{quotationId}) is declared before @GetMapping(/export). Fix: Reorder routes in QuotationController."
+          }
+        },
+        {
+          "name": "1.8 GET Export Proforma Invoices (Backend 400 Route Collision)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/proforma-invoices/export?format=xlsx",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proforma-invoices",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "xlsx"
+                }
+              ]
+            },
+            "description": "Demonstrates DEFECT-081: Crashes with HTTP 400 (Invalid UUID string: export) because @GetMapping(/{proformaInvoiceId}) is declared before @GetMapping(/export). Fix: Reorder routes in ProformaInvoiceController."
+          }
+        },
+        {
+          "name": "1.9 GET Export Sales Invoices (Backend 400 Route Collision)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sales-invoices/export?format=xlsx",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sales-invoices",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "xlsx"
+                }
+              ]
+            },
+            "description": "Demonstrates DEFECT-081: Crashes with HTTP 400 (Invalid UUID string: export) because @GetMapping(/{salesInvoiceId}) is declared before @GetMapping(/export). Fix: Reorder routes in SalesInvoiceController."
+          }
+        },
+        {
+          "name": "1.10 GET Sales Invoices - Search by Customer / Number",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sales-invoices?search=Dennis&page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sales-invoices"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "Dennis",
+                  "description": "Search keyword for customer name or invoice number"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Search commercial sales invoices by customer name or invoice number. Note: Backend requires JPA text search binding."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Retail POS Terminal - Sales History (/pos)",
+      "description": "Endpoints for querying and filtering transactions on the POS Sales History view.",
+      "item": [
+        {
+          "name": "2.1 GET Orders - Filter Status: COMPLETED",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders?status=COMPLETED&page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "COMPLETED",
+                  "description": "Order status filter"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Returns completed retail sales. On DEV, returns 62 records."
+          }
+        },
+        {
+          "name": "2.2 GET Orders - Filter Status: PENDING",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders?status=PENDING&page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "PENDING",
+                  "description": "Order status filter"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Returns pending retail orders. On DEV, returns 3 records."
+          }
+        },
+        {
+          "name": "2.3 GET Orders - Filter Sale Type: CASH",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders?saleType=CASH&page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "saleType",
+                  "value": "CASH",
+                  "description": "Payment mode filter: CASH | CREDIT"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Filter orders by cash tender. On DEV, returns 75 records."
+          }
+        },
+        {
+          "name": "2.4 GET Orders - Filter Sale Type: CREDIT",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders?saleType=CREDIT&page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "saleType",
+                  "value": "CREDIT",
+                  "description": "Payment mode filter: CASH | CREDIT"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Filter orders by credit sale facility."
+          }
+        },
+        {
+          "name": "2.5 GET Orders - Combined (Status: COMPLETED & Sale Type: CASH)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders?status=COMPLETED&saleType=CASH&page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "COMPLETED"
+                },
+                {
+                  "key": "saleType",
+                  "value": "CASH"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Query both order status and tender type simultaneously."
+          }
+        },
+        {
+          "name": "2.6 POST Create Credit Order (saleType: CREDIT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"7d138d8a-32d3-41f4-955c-be6bb726596b\",\n  \"saleType\": \"CREDIT\",\n  \"items\": [\n    {\n      \"shopProductId\": \"07db10df-a8a3-4d12-a457-153ca0cf2d46\",\n      \"quantity\": 5,\n      \"unitPrice\": 10000\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "description": "Create a sales order under credit sales facility (saleType: CREDIT)."
+          }
+        },
+        {
+          "name": "2.7 GET Orders - Date Range Filter (ISO-8601 YYYY-MM-DD)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders?saleType=CASH&startDate=2026-09-01&endDate=2026-10-14&page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "saleType",
+                  "value": "CASH",
+                  "description": "CASH or CREDIT"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2026-09-01",
+                  "description": "Strict ISO-8601 format YYYY-MM-DD"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2026-10-14",
+                  "description": "Strict ISO-8601 format YYYY-MM-DD"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Filter orders by date range. Both startDate and endDate must be YYYY-MM-DD. On DEV, returns 85+ matching cash orders."
+          }
+        },
+        {
+          "name": "2.8 GET Orders - Combined Filter (CASH + COMPLETED + Date Range)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders?saleType=CASH&status=COMPLETED&startDate=2026-09-01&endDate=2026-10-14&page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "saleType",
+                  "value": "CASH"
+                },
+                {
+                  "key": "status",
+                  "value": "COMPLETED",
+                  "description": "Must be UPPERCASE: COMPLETED | PENDING | CANCELLED | REFUNDED"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2026-09-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2026-10-14"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Full multi-parameter query for Sales History. Returns HTTP 200 OK with filtered list."
+          }
+        },
+        {
+          "name": "2.9 GET Orders - Summary KPI Metrics (Cash vs Credit Breakdown)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/summary?startDate=2026-09-01&endDate=2026-10-14",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "summary"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2026-09-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2026-10-14"
+                }
+              ]
+            },
+            "description": "Powers the top summary statistic cards on /pos Sales History (Cash count/total vs Credit count/total)."
+          }
+        },
+        {
+          "name": "2.10 GET Orders - Cashier Shift Stats (My Stats)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/my-stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "my-stats"
+              ]
+            },
+            "description": "Returns cashier shift metrics: registryOpen, totalEarnings, completedSales, pendingReceipts, cancelledSales."
+          }
+        },
+        {
+          "name": "2.11 GET Orders - Cashier Recent Sales",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/my-recent",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "my-recent"
+              ]
+            },
+            "description": "Returns the logged-in cashier's recent transactions for the POS Home Dashboard."
+          }
+        },
+        {
+          "name": "2.12 GET Orders - Cashier Top Popular Products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/my-top-products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "my-top-products"
+              ]
+            },
+            "description": "Returns top 5 popular products sold by the cashier in the current shift."
+          }
+        },
+        {
+          "name": "2.13 GET Orders - DEFECT-082 Demo (Title-Case Status 400 Bug)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders?saleType=CASH&status=Completed&page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "saleType",
+                  "value": "CASH"
+                },
+                {
+                  "key": "status",
+                  "value": "Completed",
+                  "description": "Title-case string that triggers HTTP 400"
+                }
+              ]
+            },
+            "description": "Demonstrates DEFECT-082: Passing 'Completed' instead of 'COMPLETED' crashes with HTTP 400 Bad Request: Method parameter 'status': Failed to convert value of type 'java.lang.String' to required type 'com.itibari.authorization.dataTypes.OrderStatus'."
+          }
+        },
+        {
+          "name": "2.14 GET Orders Export - DEFECT-084 Demo (Backend 500 Route Failure)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/export?saleType=CASH",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "saleType",
+                  "value": "CASH"
+                }
+              ]
+            },
+            "description": "Demonstrates DEFECT-084: GET /orders/export fails with HTTP 500 Internal Server Error (No static resource orders/export) because Spring MVC controller has no @GetMapping('/export') mapped."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. POS Returns Management (/pos)",
+      "description": "Endpoints for product returns and return reason dropdown options.",
+      "item": [
+        {
+          "name": "3.1 GET Return Reasons Catalog (Working Config Endpoint)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pos-settings/return-reasons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pos-settings",
+                "return-reasons"
+              ]
+            },
+            "description": "Official configuration endpoint for return reasons. Returns all 6 active return reasons."
+          }
+        },
+        {
+          "name": "3.2 POST Create Return Reason",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"returnReason\": \"Wrong Color or Fit\",\n  \"description\": \"Customer requested exchange due to color or size mismatch\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pos-settings/return-reasons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pos-settings",
+                "return-reasons"
+              ]
+            },
+            "description": "Create a new return reason in pos-settings."
+          }
+        },
+        {
+          "name": "3.3 GET Return Reasons (Backend 400 Route Collision Defect)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sales-returns/reasons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sales-returns",
+                "reasons"
+              ]
+            },
+            "description": "Demonstrates DEFECT-076: Returns HTTP 400 Bad Request (Invalid UUID string: reasons) because @GetMapping(/{salesReturnId}) collides with @GetMapping(/reasons)."
+          }
+        },
+        {
+          "name": "3.4 GET Sales Returns Directory",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sales-returns?page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sales-returns"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "List of processed returns. Contains RTN-10000 and RTN-10001."
+          }
+        },
+        {
+          "name": "3.5 POST Process Sales Return Note",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"receiptNumber\": \"RCT100000\",\n  \"refundMethod\": \"CASH\",\n  \"notes\": \"Damaged item returned by customer\",\n  \"items\": [\n    {\n      \"itemId\": \"7bad8d7b-f43b-4593-9849-9b256b97b073\",\n      \"quantity\": 1,\n      \"returnReasonId\": \"6f421ac2-bf57-42c0-bb69-9bcad20145dd\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/sales-returns",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sales-returns"
+              ]
+            },
+            "description": "Process a product return against a receipt."
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. User Profile & Authentication (/pos/users)",
+      "description": "Endpoints for resolving the logged-in user identity.",
+      "item": [
+        {
+          "name": "4.1 GET Current User Profile (Working Replacement for 404 /staff/profile)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/currentUser",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "currentUser"
+              ]
+            },
+            "description": "Returns publicId, firstName, lastName, email, phoneNumber, and activeStatus. Frontend currently calls /api/v1/pos/staff/profile which returns HTTP 404."
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Loyalty Program & Discount Setup (/pos-settings)",
+      "description": "Official configuration endpoints for Points Rules, Expiry, Redemption Rules, Customer Tiers, Activity Bonuses, and Storewide / Category Discounts.",
+      "item": [
+        {
+          "name": "5.1 GET Loyalty Program Configuration",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pos-settings/loyalty-program",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pos-settings",
+                "loyalty-program"
+              ]
+            },
+            "description": "Returns the full loyalty program configuration: spendAmount rules, redemption thresholds, points expiry, active customer tiers (Lead, Bronze, Gold, Platinum), and activity bonuses."
+          }
+        },
+        {
+          "name": "5.2 POST Add Loyalty Customer Tier",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Diamond Elite\",\n  \"annualSpend\": 2500000,\n  \"pointsMultiplier\": 3,\n  \"displayOrder\": 4\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pos-settings/loyalty-program/tiers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pos-settings",
+                "loyalty-program",
+                "tiers"
+              ]
+            },
+            "description": "Add a new customer tier to the loyalty program."
+          }
+        },
+        {
+          "name": "5.3 POST Add Loyalty Activity Bonus",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activity\": \"App Referral\",\n  \"bonusAmount\": 2500,\n  \"frequency\": \"Unlimited\",\n  \"enabled\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pos-settings/loyalty-program/activity-bonuses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pos-settings",
+                "loyalty-program",
+                "activity-bonuses"
+              ]
+            },
+            "description": "Add an activity bonus to the loyalty program."
+          }
+        },
+        {
+          "name": "5.4 GET Discount Setup Configuration",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pos-settings/discount-setup",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pos-settings",
+                "discount-setup"
+              ]
+            },
+            "description": "Returns current discount policy: percentage vs flat discounts, target scope (AllProducts vs ProductCategories), approval thresholds, and schedule."
+          }
+        },
+        {
+          "name": "5.5 PUT Update Discount Setup",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"discountType\": \"Percentage\",\n  \"discountValue\": 10,\n  \"maximumDiscount\": 50000,\n  \"target\": \"AllProducts\",\n  \"approvalRequired\": false,\n  \"approvalThreshold\": 15,\n  \"absoluteLimit\": 100000,\n  \"scheduleEnabled\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/pos-settings/discount-setup/eafdbe89-f85d-4717-9f54-89a8f5e0d409",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pos-settings",
+                "discount-setup",
+                "eafdbe89-f85d-4717-9f54-89a8f5e0d409"
+              ]
+            },
+            "description": "Update the tenant discount setup configuration."
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Retail POS Terminal - Register Checkout & Customer Onboarding (/pos)",
+      "description": "Endpoints powering the Create Sale view, product catalog, customer onboarding, cart checkout, and payment processing.",
+      "item": [
+        {
+          "name": "6.1 GET Products Pricing Catalog (ce9e7a2d-226e-459d-86ab-6498f567943d)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/products/pricing?pricingGroupId=ce9e7a2d-226e-459d-86ab-6498f567943d&page=0&size=24",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "products",
+                "pricing"
+              ],
+              "query": [
+                {
+                  "key": "pricingGroupId",
+                  "value": "ce9e7a2d-226e-459d-86ab-6498f567943d",
+                  "description": "Default Price Group ID"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "24"
+                }
+              ]
+            },
+            "description": "Fetches products and selling prices for the POS terminal catalog grid. Note DEFECT-083: Items omit imageUrl field."
+          }
+        },
+        {
+          "name": "6.2 GET Categories List",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/categories?size=50",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "categories"
+              ],
+              "query": [
+                {
+                  "key": "size",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": "Fetches categories for the left sidebar on /pos Create Sale. Note: Contains multiple empty categories with 0 items."
+          }
+        },
+        {
+          "name": "6.3 POST Onboard Customer (Creates & Returns Customer Profile)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerType\": \"Regular\",\n  \"firstName\": \"Amani\",\n  \"lastName\": \"Moshi\",\n  \"phone\": \"+255715998877\",\n  \"email\": \"amani.moshi@itibari.test\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "customers"
+              ]
+            },
+            "description": "Onboards a new customer from the POS terminal '+ Onboard Customer' modal. Returns HTTP 200 with customer publicId."
+          }
+        },
+        {
+          "name": "6.4 POST Create POS Cash Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"saleType\": \"CASH\",\n  \"items\": [\n    {\n      \"shopProductId\": \"23141769-407f-4a91-915c-2c012acf1c89\",\n      \"quantity\": 1,\n      \"unitPrice\": 4500\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            },
+            "description": "Step 1 of POS Cash Checkout: creates draft order and returns sales order reference (e.g. ORD100088)."
+          }
+        },
+        {
+          "name": "6.5 POST Process Cash Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"ORD100087\",\n  \"amountPaid\": 10000,\n  \"paymentMethod\": \"CASH\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments"
+              ]
+            },
+            "description": "Step 2 of POS Cash Checkout: records cash payment and tenders change. Returns HTTP 200 with paymentStatus: Paid."
+          }
+        },
+        {
+          "name": "6.6 GET Order Payment Details & Receipt Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/payments/ORD100087",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payments",
+                "ORD100087"
+              ]
+            },
+            "description": "Fetches payment summary, balance, change tendered, and receipt metadata for receipt printing."
+          }
+        }
+      ]
+    }
+  ]
+}
